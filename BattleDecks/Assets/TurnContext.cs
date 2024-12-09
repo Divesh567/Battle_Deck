@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,12 +15,20 @@ public class TurnContext : MonoBehaviour
     private void OnEnable()
     {
         TurnEventSystem.AddObjectsEvent += AddTurnObjects;
+        TurnEventSystem.NextTurnEvent += GoToNextTurn;
     }
 
     private void OnDisable()
     {
         TurnEventSystem.AddObjectsEvent -= AddTurnObjects;
+        TurnEventSystem.NextTurnEvent -= GoToNextTurn;
     }
+
+    private void GoToNextTurn()
+    {
+        turnController.GoToNextTurn();
+    }
+
     private void Awake()
     {
         turnController = new TurnController();

@@ -18,6 +18,7 @@ public class PlayerUIContext : MonoBehaviour
     private void OnEnable()
     {
         PlayerEventSystem.OnStaminaReducedEvent += controller.OnStaminaConsumedEvent;
+        PlayerEventSystem.OnDamageTakenEvent += controller.OnStaminaConsumedEvent;
     }
     private void Initalizie()
     {

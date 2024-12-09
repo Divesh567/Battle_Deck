@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0d58d75641f1674f9b5e7467da191a1, type: 3}
+  m_Name: BadCube_GunSO
+  m_EditorClassIdentifier: 
+  _cardName: Gun Shot
+  _cardIndex: 0
+  _cardEffects:
+  - {fileID: 11400000, guid: a5942b0769b9b67478b0e3ec8236aaaa, type: 2}

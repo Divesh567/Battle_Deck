@@ -16,3 +16,4 @@ MonoBehaviour:
   _cardIndex: 0
   _cardEffects:
   - {fileID: 11400000, guid: a5942b0769b9b67478b0e3ec8236aaaa, type: 2}
+  - {fileID: 11400000, guid: bf23833efae046c4d851c33c5d0c3449, type: 2}

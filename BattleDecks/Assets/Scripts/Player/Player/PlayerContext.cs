@@ -1,9 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 
-public class PlayerContext : MonoBehaviour, ICardAffectable
+public class PlayerContext : BaseContext, ICardAffectable
 {
 
     [SerializeField]
@@ -13,8 +11,6 @@ public class PlayerContext : MonoBehaviour, ICardAffectable
     private PlayerModel _model;
 
     public Behaviour behaviour;
-
-    public List<EnemyContext> currentEnemies = new List<EnemyContext>();
 
     private void Awake()
     {
@@ -29,35 +25,48 @@ public class PlayerContext : MonoBehaviour, ICardAffectable
 
     private void OnEnable()
     {
-        EventManager.OnEnemySpawnedEvent += AddEnemyTolist;
-
-
-        PlayerEventSystem.CardusedEvent += UseCard;
-
+        PlayerEventSystem.CardSelectedEvent += OnCardSelected;
+        PlayerEventSystem.CardUsedEvent += ApplyEffect;
     }
 
     private void OnDisable()
     {
-        EventManager.OnEnemySpawnedEvent -= AddEnemyTolist;
-
-
-        PlayerEventSystem.CardusedEvent -= UseCard;
+        PlayerEventSystem.CardSelectedEvent -= OnCardSelected;
+        PlayerEventSystem.CardUsedEvent -= ApplyEffect;
 
     }
-
-    public void AddEnemyTolist(EnemyContext enemy)
+    private void Start()
     {
-        currentEnemies.Add(enemy);
+        TargetSelector.registerAction.Invoke(this);
     }
 
-    private void UseCard(CardModel model)
+
+    private void OnCardSelected(CardModel model)
     {
-        model.cardEffects.ForEach(x => x.ApplyEffectToTarget(currentEnemies[0]));
-
-        model.cardEffects.ForEach(x => x.ApplyEffectToTarget(this));
+        Debug.Log("TARGET SELECTED");
+        TargetSelector.activateTargets(model);
     }
 
-    public void ApplyCardToSelf(CardEffect effect)
+
+
+    public void ApplyEffect()
+    {
+        var selectedCard = TargetSelector.currentSelectedCard;
+
+        foreach(CardEffect effect in selectedCard.cardEffects)
+        {
+            if (effect.UseOnSelf)
+                ApplyEffectToSelf(effect);
+        }
+      
+    }
+
+    public void EnableSelector()
+    {
+        
+    }
+
+    public void ApplyEffectToSelf(CardEffect effect)
     {
         controller.CardEffectOnSelfEvent.Invoke(effect);
     }

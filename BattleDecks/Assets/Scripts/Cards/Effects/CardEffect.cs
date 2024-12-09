@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class CardEffect : ScriptableObject, ICardEffect
 {
-    
+    public bool UseOnSelf;
     public virtual void ApplyEffectToTarget(ICardAffectable cardAffectable)
     {
         //Apply Base Effect to enemy, if any

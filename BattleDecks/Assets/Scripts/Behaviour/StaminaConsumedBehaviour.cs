@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-[CreateAssetMenu(fileName = "Stamina Consumed", menuName = "Behaviour/Stamina Consumed", order = 50)]
+[CreateAssetMenu(fileName = "Stamina Consumed", menuName = "Behaviour/Player/Stamina Consumed", order = 50)]
 public class StaminaConsumedBehaviour : BehaviourSO
 {
     [SerializeField]
@@ -24,7 +24,7 @@ public class StaminaConsumedBehaviour : BehaviourSO
         if (!IsTriggered(effect)) return;
 
 
-        ApplyDamageEffect(effect, playerController);
+        ConsumeStamina(effect, playerController);
 
     }
 
@@ -33,7 +33,7 @@ public class StaminaConsumedBehaviour : BehaviourSO
         return triggers.Exists(x => x.GetType() == effect.GetType());
     }
 
-    private void ApplyDamageEffect(CardEffect effect, PlayerController controller)
+    private void ConsumeStamina(CardEffect effect, PlayerController controller)
     {
         var staminaConsumed = effect as StaminaConsumtion;
         if (staminaConsumed != null)

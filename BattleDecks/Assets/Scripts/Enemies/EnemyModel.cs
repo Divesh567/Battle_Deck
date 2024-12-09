@@ -1,37 +1,75 @@
 using UnityEngine.Events;
 using UnityEngine;
+using System.Collections.Generic;
+using System;
 
 [CreateAssetMenu(fileName = "Enemy", menuName = "Enemy/New Enemy", order = 0)]
 public class EnemyModel : ScriptableObject
 {
-    public class OnPlayerDeadEvent : UnityEvent { }
+    public class OnEnemyDeadEvent : UnityEvent {}
 
-    public OnPlayerDeadEvent playerDeadEvent = new OnPlayerDeadEvent();
+    public OnEnemyDeadEvent enemyDeadEvent = new OnEnemyDeadEvent();
 
-    public int MaxHealth; 
-    private int _currentHealth; // implement observable for these variables
+    public int MaxHealth;
 
-    public int currentHealth => _currentHealth;
+
+
+
+    public ObservableVariable<int> obvHealth = new ObservableVariable<int>();
+    private int _health;
+    public int Health
+    {
+        get { return _health; }
+
+        set
+        {
+            _health = value;
+            obvHealth.Var = _health;
+        }
+    }
+
+
 
     public bool isStunned;
+
+    [Header("Attack Cards")]
+    [SerializeField]
+    private List<CardModel> attackCards;
+
+    [Space(10)]
+
+    [Header("Defense Cards")]
+    [SerializeField]
+    private List<CardModel> defenseCards;
+
+    [Space(10)]
+
+    [Header("Misc Cards")]
+    [SerializeField]
+    private List<CardModel> miscCards;
+
+
     public void InitEnemyStats()
     {
-        _currentHealth = MaxHealth;
+        Health = MaxHealth;
     }
     public void ReduceHealth(int Amount)
     {
-        EnemyLogger.instance.Showlog("Health Reduced " + _currentHealth + "-" + Amount + " = " + (_currentHealth - Amount));
-        _currentHealth -= Amount;
-        if (_currentHealth <= 0)
+        EnemyLogger.instance.Showlog("Health Reduced " + _health + "-" + Amount + " = " + (_health - Amount));
+        Health -= Amount;
+        if (_health <= 0)
         {
-            playerDeadEvent.Invoke();
+            enemyDeadEvent.Invoke();
         }
-
     }
-
     public void Stunned()
     {
         isStunned = true;
         EnemyLogger.instance.Showlog("isStunned " + isStunned);
+    }
+
+    public  void PlayAttackCard()
+    {
+      //  attackCards[0].cardEffects.ForEach(x => x.ApplyEffectToTarget(FindAnyObjectByType<PlayerContext>())); // to be refactored
     }
 }

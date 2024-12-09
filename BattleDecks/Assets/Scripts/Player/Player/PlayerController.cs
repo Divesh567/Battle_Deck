@@ -9,7 +9,8 @@ public class PlayerController : ICardAffectable
     public class StaminaReduced : UnityEvent<int> { }
     public StaminaReduced StaminaReducedEvent = new StaminaReduced();
 
-
+    public class DamageTaken : UnityEvent<int> { }
+    public DamageTaken DamageTakenEvent = new DamageTaken();
 
     PlayerView _view;
     PlayerModel _model;
@@ -24,6 +25,7 @@ public class PlayerController : ICardAffectable
 
         CardEffectOnSelfEvent.AddListener(ApplyCardEffectToThis);
         StaminaReducedEvent.AddListener(OnStaminaReducedEvent);
+        DamageTakenEvent.AddListener(OnDamageTaken);
     }
 
     public void ApplyCardEffectToThis(CardEffect effect)
@@ -31,13 +33,23 @@ public class PlayerController : ICardAffectable
         _playerBehaviour.CheckBehaviours(effect, this);
     }
 
-    public void ApplyCardToSelf(CardEffect model)
+    public void ApplyEffectToSelf(CardEffect effect)
     {
-        
+        _playerBehaviour.CheckBehaviours(effect, this);
     }
 
     private void OnStaminaReducedEvent(int amount)
     {
         PlayerEventSystem.OnStaminaReducedEventCaller(amount);
+    }
+
+    private void OnDamageTaken(int amount)
+    {
+        PlayerEventSystem.OnStaminaReducedEventCaller(amount);
+    }
+
+    public void EnableSelector()
+    {
+        throw new System.NotImplementedException();
     }
 }

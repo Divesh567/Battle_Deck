@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 24321709172444163}
   - component: {fileID: 3490818642108431321}
   - component: {fileID: 464702639720059939}
+  - component: {fileID: 7150362741928925361}
   m_Layer: 5
   m_Name: Card
   m_TagString: Untagged
@@ -91,11 +92,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a62b4adb3d4011c448d281752e1f8f1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rectTransform: {fileID: 24321709172444161}
+  image: {fileID: 24321709172444163}
+  canvasGroup: {fileID: 7150362741928925361}
+  selectionAnimation: {fileID: 11400000, guid: 08e8344a74fd418428971a9fd9fddf67, type: 2}
   cardNameTextMesh: {fileID: 24321709338771998}
   selectButton: {fileID: 464702639720059939}
-  unSelectButton: {fileID: 0}
   _startingParent: {fileID: 0}
   _startingPos: {x: 0, y: 0, z: 0}
+  cardModel: {fileID: 0}
 --- !u!114 &464702639720059939
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -140,6 +145,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!225 &7150362741928925361
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 24321709172444174}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &24321709338771996
 GameObject:
   m_ObjectHideFlags: 0

@@ -10,7 +10,7 @@ public class EnemySpawner : MonoBehaviour
     private void OnEnable()
     {
         EventManager.OnGameStartButtonClickEvent += SpawnEnemy;
-        SpawnEnemy();
+     
     }
 
 
@@ -18,10 +18,19 @@ public class EnemySpawner : MonoBehaviour
     {
         EventManager.OnGameStartButtonClickEvent -= SpawnEnemy;
     }
+    private void Start()
+    {
+        SpawnEnemy();
+    }
 
     private void SpawnEnemy()
     {
         var newEnemy =  Instantiate(enemy);
-        EventManager.OnEnemySpawnedEventCaller(newEnemy);
+        EventManager.OnEnemySpawnedEventCaller(newEnemy); // Not - Used 
+        TargetSelector.registerAction.Invoke(newEnemy);
     }
+
+
+
+   
 }

@@ -1,5 +1,7 @@
 ﻿public interface ICardAffectable
 {
-    void ApplyCardToSelf(CardEffect model);
+    void EnableSelector();
+
+    void ApplyEffectToSelf(CardEffect model);
 
 }

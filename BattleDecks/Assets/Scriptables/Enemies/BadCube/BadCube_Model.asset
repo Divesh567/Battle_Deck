@@ -12,4 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09f03171be8e36540bfa372a3fea2816, type: 3}
   m_Name: BadCube_Model
   m_EditorClassIdentifier: 
-  MaxHealth: 50
+  MaxHealth: 100
+  obvHealth:
+    m_PersistentCalls:
+      m_Calls: []
+  isStunned: 0
+  attackCards:
+  - {fileID: 11400000, guid: ef616a12e9d59dc4485137b3189a68d0, type: 2}
+  defenseCards:
+  - {fileID: 11400000, guid: 88085e2f8a9960045801c90003efe9d0, type: 2}
+  miscCards:
+  - {fileID: 11400000, guid: 88085e2f8a9960045801c90003efe9d0, type: 2}

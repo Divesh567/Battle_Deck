@@ -6,16 +6,29 @@ using UnityEngine.Events;
 //Card View contains the UI logic and component references of a card
 public class CardView : BaseView
 {
+    #region EVENTS
     public class CardSelected : UnityEvent {}
-
     public class CardUnSelected : UnityEvent {}
+    public class CardUsed : UnityEvent {} 
 
-    public class CardUsed : UnityEvent {}
 
-    //EVENTS
     public CardSelected CardSelectedEvent = new CardSelected();
     public CardUnSelected CardUnSelectedEvent = new CardUnSelected();
     public CardUsed CardUsedEvent = new CardUsed();
+
+    #endregion
+
+
+    #region AnimationCache
+
+    public RectTransform rectTransform;
+    public Image image;
+    public CanvasGroup canvasGroup;
+
+    public CardSelectionAnimation selectionAnimation ;
+
+    #endregion
+
 
     [SerializeField]
     private TextMeshProUGUI cardNameTextMesh;
@@ -27,6 +40,8 @@ public class CardView : BaseView
     public Vector3 _startingPos;
 
     public CardModel cardModel;
+
+
     public CardModel CardModel { get { return cardModel; } set 
     {
         cardModel = value;
@@ -35,11 +50,14 @@ public class CardView : BaseView
     
     private void Start()
     {
+        selectionAnimation = new CardSelectionAnimation(this);
+
         _startingParent = transform.parent;
         _startingPos = transform.position;
 
         selectButton.onClick.AddListener(() => CardSelectedEvent.Invoke());
 
+        CardUsedEvent.AddListener(Usecard);
     }
 
     public void SetCardDetails()
@@ -56,7 +74,6 @@ public class CardView : BaseView
 
         selectButton.onClick.RemoveAllListeners();
         selectButton.onClick.AddListener(() => CardSelectedEvent.Invoke());
-
     }
 
     public void UpdateButtonOnCardSelected()
@@ -69,20 +86,22 @@ public class CardView : BaseView
     public void SetCardsOnGameStart()
     {
         selectButton.onClick.RemoveAllListeners();
-        selectButton.onClick.AddListener(() => Usecard());
+        selectButton.onClick.AddListener(() => OnCardSelected());
     }
 
+    public void OnCardSelected()
+    {
+        selectButton.image.color = Color.cyan;
+        
+        CardSelectedEvent.Invoke();
+    }
 
     private void Usecard()
     {
-        CardUsedEvent.Invoke();
-
         Destroy(this.gameObject);
     }
     public void DisableCard()
     {
         gameObject.SetActive(false);
     }
-
-
 }

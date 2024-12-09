@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-[CreateAssetMenu(fileName = "Get Stunned", menuName = "Behaviour/Get Stunned", order = 50)]
+[CreateAssetMenu(fileName = "Get Stunned", menuName = "Behaviour/Enemy/Get Stunned", order = 50)]
 
 class GetStunnedBehaviour : BehaviourSO
 {

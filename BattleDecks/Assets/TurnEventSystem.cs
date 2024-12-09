@@ -1,15 +1,19 @@
 ﻿using System;
-using UnityEngine.Events;
-using UnityEngine;
 
-public class TurnEventSystem : SingletonBaseClass<TurnEventSystem>
+public static class TurnEventSystem 
 {
-
     public static event Action<TurnClass> AddObjectsEvent;
 
     public static void AddObjectsEventCaller(TurnClass turnObject)
     {
         AddObjectsEvent?.Invoke(turnObject);
+    }
+
+    public static event Action NextTurnEvent;
+
+    public static void NextTurnEventCaller()
+    {
+        NextTurnEvent?.Invoke();
     }
 
 }

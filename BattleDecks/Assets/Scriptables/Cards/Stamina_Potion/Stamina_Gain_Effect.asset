@@ -12,4 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d770de60a36a5b458dcfa903a3fb2ce, type: 3}
   m_Name: Stamina_Gain_Effect
   m_EditorClassIdentifier: 
-  StaminaAmount: 10
+  UseOnSelf: 1
+  _staminaConsumtion: 10

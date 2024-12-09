@@ -11,7 +11,7 @@ public class StunEffect : CardEffect
     public int chanceToStun { get { return _chanceToStun; } }
     public override void ApplyEffectToTarget(ICardAffectable target)
     {
-        target.ApplyCardToSelf(this);
+        target.ApplyEffectToSelf(this);
     }
 
 }

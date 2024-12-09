@@ -11,7 +11,7 @@ public class DamageEffect : CardEffect
     public int damageAmount { get { return _damageAmount; } }
     public override void ApplyEffectToTarget(ICardAffectable target)
     {
-        target.ApplyCardToSelf(this);
+        target.ApplyEffectToSelf(this);
     }
 
 }

@@ -12,7 +12,7 @@ public class StaminaConsumtion : CardEffect
 
     public override void ApplyEffectToTarget(ICardAffectable cardAffectable)
     {
-        cardAffectable.ApplyCardToSelf(this);
+        cardAffectable.ApplyEffectToSelf(this);
     }
 
 

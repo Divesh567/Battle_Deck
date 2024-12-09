@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Take Damage", menuName = "Behaviour/Take Damage", order = 50)]
+[CreateAssetMenu(fileName = "Take Damage", menuName = "Behaviour/Enemy/Take Damage", order = 50)]
 public class TakeDamageBehaviour : BehaviourSO
 {
     [SerializeField]

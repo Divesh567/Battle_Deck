@@ -4,7 +4,7 @@ using UnityEngine.Events;
 /// <summary>
 /// Highest level class in hand context contanins all mvcs
 /// </summary>
-public class HandContext : TurnClass
+public class HandContext : BaseContext
 {
     [SerializeField]
     private HandView _view;
@@ -13,39 +13,60 @@ public class HandContext : TurnClass
     [SerializeField]
     private HandModel _model;
 
-    public class OnTurnStarted : UnityEvent {}
-    public OnTurnStarted onTurnStartedEvent = new OnTurnStarted();
 
+    private TurnClass _turnClass;
 
-    public class CardPlayed : UnityEvent<CardModel>{}
-    public CardPlayed CardPlayedEvent = new CardPlayed();
-
+    public class TurnStarted : UnityEvent {}
+    public TurnStarted OnTurnStartedEvent = new TurnStarted();
 
 
     private void Start()
     {
+        InitializeController();
+        RegisterEvents();
+
+        _turnClass = new TurnClass();
+        _turnClass.baseContext = this;
+        _turnClass.color = Color.blue;
+        _turnClass.RegiterObjectForTurn();
+
+    }
+
+    private void RegisterEvents()
+    {
+        _controller.CardSelectedEvent.AddListener(OnCardSelected);
+        _controller.CardUnSelectedEvent.AddListener(OnCardUnSelected);
+        OnTurnStartedEvent.AddListener(OnTurnStarted);
+
+        PlayerEventSystem.CardUsedEvent += OnCardUsed;
+    }
+
+    private void InitializeController()
+    {
         _controller = new HandController();
         _controller.Initialize(_view);
-
-
-        _controller.CardPlayedEvent.AddListener(CardUsed);
-        onTurnStartedEvent.AddListener(() => TurnStarted());
-
-        TurnEventSystem.AddObjectsEventCaller(this);
     }
 
 
-    private void CardUsed(CardModel model)
+    private void OnCardSelected(CardModel model)
     {
-        CardPlayedEvent.Invoke(model);
+        PlayerEventSystem.CardSelectedEventCaller(model);
+    }
 
-        PlayerEventSystem.CardusedEventCaller(model);
+    private void OnCardUnSelected(CardModel model)
+    {
+
+    }
+
+    private void OnCardUsed()
+    {
+        _controller.CardPlayedEvent.Invoke();
     }
 
 
-    private void TurnStarted()
+    private void OnTurnStarted()
     {
-       
+        _controller.OnTurnStartedEvent?.Invoke();
     }
 
 }

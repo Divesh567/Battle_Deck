@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-[CreateAssetMenu(fileName = "Dodge", menuName = "Behaviour/Dodge", order = 50)]
+[CreateAssetMenu(fileName = "Dodge", menuName = "Behaviour/Enemy/Dodge", order = 50)]
 public class DodgeBehaviour : BehaviourSO
 {
 

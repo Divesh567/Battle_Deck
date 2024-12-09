@@ -1,5 +1,8 @@
 ﻿
 public interface ITurnObject
 {
-    public object ApplyForTurn();
+    public void RegiterObjectForTurn();
+
+    public void StartTurn();
+
 }

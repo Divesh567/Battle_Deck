@@ -2,12 +2,15 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+[System.Serializable]
 public class Turn : MonoBehaviour
 {
     public ITurnObject turnObject;
 
     [SerializeField]
-    private Image playerImage;
+    public Image playerImage;
+    [SerializeField]
+    private string playerName;
 
     
     
