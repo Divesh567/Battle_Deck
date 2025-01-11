@@ -64,7 +64,7 @@ public class PlayerContext : BaseContext, ICardAffectable
     public void EnableSelector()
     {
         
-    }
+    }//#TODO to be refactored
 
     public void ApplyEffectToSelf(CardEffect effect)
     {

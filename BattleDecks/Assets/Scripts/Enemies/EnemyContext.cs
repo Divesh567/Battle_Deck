@@ -18,22 +18,16 @@ public class EnemyContext : BaseContext , ICardAffectable
 
     private void Start()
     {
-
         enemyController = new EnemyController();
-
         enemyController.Init(enemyModel, enemyView, behaviour);
 
         enemyController.TargetSelectedEvent.AddListener(OnTargetSelected);
+        enemyController.EnemyDeadEvent.AddListener(RemoveTurns);
+        enemyController.OnTurnEndedEvent.AddListener(EndTurn);
 
         onTurnStartedEvent.AddListener(() => TurnStarted());
 
-
-        turnClass = new TurnClass();
-        turnClass.baseContext = this;
-        turnClass.color = Color.red;
-        turnClass.RegiterObjectForTurn();
-
-
+        turnClass = new TurnClass(this, enemyModel.enemyTurnUIDetails);
 
     }
 
@@ -48,16 +42,19 @@ public class EnemyContext : BaseContext , ICardAffectable
 
     private void TurnStarted()
     {
-        StartCoroutine(WaitforTurnEnd());
-      
-    }
-
-    private IEnumerator WaitforTurnEnd()
-    {
-        yield return new WaitForSeconds(4f);
-
         enemyController.onTurnStartedEvent?.Invoke();
     }
+
+    private void EndTurn()
+    {
+        TurnEventSystem.NextTurnEventCaller();
+    }
+
+    private void RemoveTurns()
+    {
+        TurnEventSystem.RemoveObjectsEventCaller(turnClass);
+    }
+
     public void EnableSelector()
     {
         enemyController.EnableSelector();

@@ -41,6 +41,8 @@ public class CardView : BaseView
 
     public CardModel cardModel;
 
+    public CardUIElements cardUI;
+
 
     public CardModel CardModel { get { return cardModel; } set 
     {
@@ -62,7 +64,7 @@ public class CardView : BaseView
 
     public void SetCardDetails()
     {
-        cardNameTextMesh.text = CardModel.cardName;
+        cardUI.SetupElements(cardModel.cardUIDetails);
     }
 
 
@@ -80,7 +82,6 @@ public class CardView : BaseView
     {
         selectButton.onClick.RemoveAllListeners();
         selectButton.onClick.AddListener(() => CardUnSelectedEvent.Invoke());
-        selectButton.image.color = Color.cyan;
     }
 
     public void SetCardsOnGameStart()
@@ -91,17 +92,22 @@ public class CardView : BaseView
 
     public void OnCardSelected()
     {
-        selectButton.image.color = Color.cyan;
-        
         CardSelectedEvent.Invoke();
     }
 
     private void Usecard()
     {
-        Destroy(this.gameObject);
+       
     }
+
+
     public void DisableCard()
     {
-        gameObject.SetActive(false);
+        selectButton.interactable = false;
+    }
+
+    public void EnableCard()
+    {
+        selectButton.interactable = true;
     }
 }

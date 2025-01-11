@@ -45,10 +45,10 @@ public class PlayerController : ICardAffectable
 
     private void OnDamageTaken(int amount)
     {
-        PlayerEventSystem.OnStaminaReducedEventCaller(amount);
+        PlayerEventSystem.OnDamageTakenEventCaller(amount);
     }
 
-    public void EnableSelector()
+    public void EnableSelector() // To be refactored
     {
         throw new System.NotImplementedException();
     }

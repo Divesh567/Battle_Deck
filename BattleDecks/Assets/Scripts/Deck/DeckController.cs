@@ -15,6 +15,8 @@ public class DeckController
     {
         _view = view;
         _model = model;
+
+        _view.InitDeckView(_model);
     }
 
 

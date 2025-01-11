@@ -21,6 +21,9 @@ public class HandController
     public class TurnStarted : UnityEvent { }
     public TurnStarted OnTurnStartedEvent = new TurnStarted();
 
+    public class TurnEnded : UnityEvent { }
+    public TurnEnded OnTurnEndedEvent = new TurnEnded();
+
     public void Initialize(HandView view)
     {
         _view = view;
@@ -33,6 +36,8 @@ public class HandController
     {
         _view.CardSelectedEvent.AddListener(OnCardSelected);
         _view.CardUnSelectedEvent.AddListener(OnCardUnSelected);
+
+
         _view.OnTurnEndClickedEvent.AddListener(EndTurn);
     }
 
@@ -45,7 +50,7 @@ public class HandController
 
     private void EndTurn()
     {
-        TurnEventSystem.NextTurnEventCaller();  
+        OnTurnEndedEvent.Invoke();
     }
 
     public void SpawnCards()

@@ -24,6 +24,12 @@ public class PlayerEventSystem : SingletonBaseClass<PlayerEventSystem>
         OnStaminaReducedEvent?.Invoke(amount);
     }
 
+    public static event Action<int> OnStaminaRegenratedEvent;
+    public static void OnStaminaRegenratedEventCaller(int amount)
+    {
+        OnStaminaRegenratedEvent?.Invoke(amount);
+    }
+
 
     public static event Action<int> OnDamageTakenEvent;
     public static void OnDamageTakenEventCaller(int amount)

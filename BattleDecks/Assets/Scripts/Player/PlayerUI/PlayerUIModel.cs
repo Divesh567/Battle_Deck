@@ -10,7 +10,8 @@ public class PlayerUIModel : ScriptableObject
 {
     public class StaminaReduced : UnityEvent<int> { }
     public StaminaReduced StaminaConsumedEvent = new StaminaReduced();
-
+    public class StaminaRegenerated : UnityEvent<int> { }
+    public StaminaRegenerated StaminaRegeneratedEvent = new StaminaRegenerated();
     public class HealthReduced : UnityEvent<int> { }
     public HealthReduced HealthReducedEvent = new HealthReduced();
 
@@ -46,16 +47,29 @@ public class PlayerUIModel : ScriptableObject
 
     public void InitModel()
     {
+        Health = 100;
+
         StaminaConsumedEvent.AddListener(OnStaminaReduced);
+        StaminaRegeneratedEvent.AddListener(OnStaminaRegenrated);
         HealthReducedEvent.AddListener(OnHealthReduced);
 
         Stamina = 100;
+       
     }
 
 
     void OnStaminaReduced(int amount)
     {
+        PlayerLogger.instance?.Showlog("Stamina Reduce by " + amount + " Points");
+
         Stamina -= amount;
+    }
+
+    void OnStaminaRegenrated(int amount)
+    {
+        PlayerLogger.instance?.Showlog("Stamina Regenrated by " + amount + " Points");
+
+        Stamina += amount;
     }
 
     void OnHealthReduced(int amount)

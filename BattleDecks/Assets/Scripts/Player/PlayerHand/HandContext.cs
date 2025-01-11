@@ -25,18 +25,17 @@ public class HandContext : BaseContext
         InitializeController();
         RegisterEvents();
 
-        _turnClass = new TurnClass();
-        _turnClass.baseContext = this;
-        _turnClass.color = Color.blue;
-        _turnClass.RegiterObjectForTurn();
-
+        _turnClass = new TurnClass(this, _model.TurnUIDetails);
     }
 
     private void RegisterEvents()
     {
         _controller.CardSelectedEvent.AddListener(OnCardSelected);
         _controller.CardUnSelectedEvent.AddListener(OnCardUnSelected);
+
+
         OnTurnStartedEvent.AddListener(OnTurnStarted);
+        _controller.OnTurnEndedEvent.AddListener(OnTurnEnded);
 
         PlayerEventSystem.CardUsedEvent += OnCardUsed;
     }
@@ -67,6 +66,11 @@ public class HandContext : BaseContext
     private void OnTurnStarted()
     {
         _controller.OnTurnStartedEvent?.Invoke();
+    }
+
+    private void OnTurnEnded()
+    {
+        TurnEventSystem.NextTurnEventCaller();
     }
 
 }

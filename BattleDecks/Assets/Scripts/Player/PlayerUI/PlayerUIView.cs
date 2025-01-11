@@ -14,26 +14,28 @@ public class PlayerUIView : MonoBehaviour
 
     private PlayerUIModel uIModel;
 
-    public void Init(PlayerUIModel model)
-    {
-        uIModel = model;
-
-        uIModel.obvStamina.valueChanged.AddListener(OnStaminaReduced);
-        uIModel.obvHealth.valueChanged.AddListener(OnHealthReduced);
-    }
-
-    private void OnHealthReduced(int amount)
-    {
-        healthSlider.value = amount;
-    }
-
     private void Start()
     {
         healthSlider.value = 100;
         staminaSlider.value = 100;
     }
 
-    void OnStaminaReduced(int amount)
+    public void Init(PlayerUIModel model)
+    {
+        uIModel = model;
+
+        uIModel.obvStamina.valueChanged.AddListener(OnStaminaChanged);
+        uIModel.obvHealth.valueChanged.AddListener(OnHealthChanged);
+    }
+
+    private void OnHealthChanged(int amount)
+    {
+        healthSlider.DOValue(amount, 0.5f);
+    }
+
+   
+
+    void OnStaminaChanged(int amount)
     {
         staminaSlider.DOValue(amount, 0.5f);
     }

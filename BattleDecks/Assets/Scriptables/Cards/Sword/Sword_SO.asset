@@ -12,8 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0d58d75641f1674f9b5e7467da191a1, type: 3}
   m_Name: Sword_SO
   m_EditorClassIdentifier: 
-  _cardName: Slash
-  _cardIndex: 0
+  cardUIDetails:
+    cardName: Slash
+    baseArt: {fileID: 21300000, guid: fe299e6cfdaaa0744b7cffa89dec2149, type: 3}
+    mainArt: {fileID: 21300000, guid: 4ad16adfdf2d1a441879a598de742eb6, type: 3}
+    cardInfo: 50/25
   _cardEffects:
   - {fileID: 11400000, guid: b3cc2b7b4944b1f45b82f0cb905e984c, type: 2}
   - {fileID: 11400000, guid: ae870fa8a2829a3498049fe6f0f1dd69, type: 2}

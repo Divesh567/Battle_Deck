@@ -2,72 +2,64 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
+using System.Linq;
+using UnityEngine.Events;
 
 [ExecuteInEditMode]
 public class FanLayoutGroup : MonoBehaviour
 {
+    public static UnityEvent OnGroupChangedEvent = new UnityEvent();
     [SerializeField]
-    private RectTransform panelSize;
+    private RectTransform parentPanel;
 
-    [SerializeField]
+
     private List<RectTransform> _childrenList;
 
+    [Header("Layout Values")]
     [SerializeField]
     private float _layoutRotation;
     [SerializeField]
-    private float _cardStartPosition;
+    private float _spacing;
 
-
-    [SerializeField]
-    private float _paddingXOverride;
-    private float _paddingX;
-
-    private float positionOffsetX;
-    private float positionOffSetY;
-
-    [SerializeField]
-    private float _rotationOffset;
-    private bool isEven;
-
-    [SerializeField]
-    private float CardVerticalOffset;
-    [SerializeField]
-    private float CardHorizontalOffset;
-
+    [Header("Animation Values")]
     [SerializeField]
     private float _animationSpeed;
 
+    private float _cardStartPosition;
+    private float _cardSpacing;
+    private float positionOffsetX;
+    private float _rotationOffset;
+    private float CardHorizontalOffset;
 
-    public List<Vector2> newPosForCards;
 
-    public List<Quaternion> newRotForCards;
+    private bool isEven;
 
-    private float _layoutstartYPos;
-    public bool isSteal;
+  
+    private List<Vector2> newPosForCards = new List<Vector2>();
+    private List<Quaternion> newRotForCards =  new List<Quaternion>();
 
-    void Start()
+    private void OnEnable()
     {
-        CheckCards();
-        _layoutstartYPos = transform.GetChild(0).GetComponent<RectTransform>().anchoredPosition.y;
+        OnGroupChangedEvent.AddListener(CheckCards);
     }
 
-
-
-    public void RemoveCard(int ChildIndex)
+    private void OnDisable()
     {
-        _childrenList.RemoveAt(ChildIndex);
-        CheckCards();
+        OnGroupChangedEvent.AddListener(CheckCards);
     }
 
     public void CheckCards()
     {
-        _childrenList.Clear();
-        foreach (Transform child in transform)
+        Debug.Log("FANLAYOUT UPDATED");
+        _childrenList = new List<RectTransform>();
+        
+        for(int i = 0; i < transform.childCount; i++)
         {
-            _childrenList.Add(child.GetComponent<RectTransform>());
+            _childrenList.Add(transform.GetChild(i).GetComponent<RectTransform>());
         }
+       
 
-        if(_childrenList.Count == 0)
+        if (_childrenList.Count == 0)
         {
             return;
         }
@@ -80,9 +72,9 @@ public class FanLayoutGroup : MonoBehaviour
             isEven = false;
         }
 
-        positionOffsetX = panelSize.sizeDelta.x / _childrenList.Count / positionOffsetX;
+        positionOffsetX = parentPanel.sizeDelta.x / _childrenList.Count / positionOffsetX;
         AnchorCards();
-        _paddingX = _paddingXOverride / _childrenList.Count;
+        _cardSpacing = _spacing / _childrenList.Count;
     }
 
     public void AnchorCards()
@@ -100,9 +92,9 @@ public class FanLayoutGroup : MonoBehaviour
     {
         newPosForCards.Clear();
 
-        _cardStartPosition = (panelSize.sizeDelta.x / _childrenList.Count - _paddingX);
+        _cardStartPosition = (parentPanel.sizeDelta.x / _childrenList.Count - _cardSpacing);
 
-        var lastCardPos = (panelSize.sizeDelta.x - _cardStartPosition);
+        var lastCardPos = (parentPanel.sizeDelta.x - _cardStartPosition);
 
         var lengthofhand = (lastCardPos - _cardStartPosition);
 
@@ -118,9 +110,7 @@ public class FanLayoutGroup : MonoBehaviour
         }
         if (_childrenList.Count == 1)
         {
-            var cardPosX = panelSize.sizeDelta.x / 2;
-            _childrenList[0].DOAnchorPos(new Vector2(cardPosX, 0f), 1f);
-            _childrenList[0].DOLocalRotate(Vector3.zero, 1f);
+            SetOneCard();
             return;
         }
         if (_childrenList.Count == 2)
@@ -138,12 +128,19 @@ public class FanLayoutGroup : MonoBehaviour
         }
     }
 
+    private void SetOneCard()
+    {
+        var cardPosX = parentPanel.sizeDelta.x / 2;
+        _childrenList[0].DOAnchorPos(new Vector2(cardPosX, 0f), 1f);
+        _childrenList[0].DOLocalRotate(Vector3.zero, 1f);
+    }
+
     private void FanOutTwoCards()
     {
-        _cardStartPosition = panelSize.sizeDelta.x / _childrenList.Count;
+        _cardStartPosition = parentPanel.sizeDelta.x / _childrenList.Count;
 
-        _childrenList[0].DOAnchorPos(new Vector2(_cardStartPosition - _paddingX * 4, 0f), 0.5f);
-        _childrenList[1].DOAnchorPos(new Vector2(_cardStartPosition + _paddingX * 4, 0f), 0.5f);
+        _childrenList[0].DOAnchorPos(new Vector2(_cardStartPosition - _cardSpacing * 4, 0f), 0.5f);
+        _childrenList[1].DOAnchorPos(new Vector2(_cardStartPosition + _cardSpacing * 4, 0f), 0.5f);
         var firtRot = Quaternion.Euler(0, 0, _layoutRotation / 2).eulerAngles;
         _childrenList[0].DOLocalRotate(firtRot, 0.5f);
         var secondRot = Quaternion.Euler(0, 0, -_layoutRotation / 2).eulerAngles;
@@ -152,6 +149,8 @@ public class FanLayoutGroup : MonoBehaviour
     }
     public void FanOutCards()
     {
+       
+
         newRotForCards.Clear();
         for (int i = 0; i <= _childrenList.Count - 1; i++)
         {
@@ -160,7 +159,7 @@ public class FanLayoutGroup : MonoBehaviour
         }
         var firstCard = _childrenList[0];
 
-        _rotationOffset = _layoutRotation / (/*transform.childCount*/_childrenList.Count / 2);
+        _rotationOffset = _layoutRotation / (_childrenList.Count / 2);
         var firstRot = Quaternion.Euler(0, 0, _layoutRotation);
         newRotForCards[0] = firstRot;
 
@@ -182,13 +181,11 @@ public class FanLayoutGroup : MonoBehaviour
               
                 var relativeCard = newRotForCards[_childrenList.Count - i];
                 newRotForCards[i - 1] = (Quaternion.Euler(0, 0, -relativeCard.eulerAngles.z));
-                //_childrenList[i - 1].rotation = (Quaternion.Euler(0, 0, -relativeCard.rotation.eulerAngles.z); 
             }
         }
 
         var lastCard = _childrenList.FindLast(x => x);
         var lastRot = Quaternion.Euler(0, 0, -_layoutRotation);
-        // lastCard.rotation = lastRot;
 
         newRotForCards[_childrenList.Count - 1] = lastRot;
 
@@ -264,6 +261,12 @@ public class FanLayoutGroup : MonoBehaviour
         {
             CheckCards();
         }
+    }
+
+    public void RemoveCard(int ChildIndex)
+    {
+        _childrenList.RemoveAt(ChildIndex);
+        CheckCards();
     }
 
 }

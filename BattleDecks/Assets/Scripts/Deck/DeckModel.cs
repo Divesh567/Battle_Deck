@@ -11,7 +11,7 @@ public class DeckModel
     public DeckLimitNotReached DeckLimitNotRecheadEvent = new DeckLimitNotReached();
 
 
-    private int sizeLimit = 3;
+    private int sizeLimit = 7;
     private int currentSize;
 
     public int SizeLimit { get { return sizeLimit; } set { sizeLimit = value; } }

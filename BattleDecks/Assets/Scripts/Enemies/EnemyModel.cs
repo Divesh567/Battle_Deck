@@ -6,15 +6,49 @@ using System;
 [CreateAssetMenu(fileName = "Enemy", menuName = "Enemy/New Enemy", order = 0)]
 public class EnemyModel : ScriptableObject
 {
-    public class OnEnemyDeadEvent : UnityEvent {}
+   
 
-    public OnEnemyDeadEvent enemyDeadEvent = new OnEnemyDeadEvent();
+    public EnemyStats enemyStats;
+    public TurnUIDetails enemyTurnUIDetails;
+
+    [Header("Attack Cards")]
+    [SerializeField]
+    private List<CardModel> attackCards;
+
+    [HideInInspector]
+    public List<CardModel> AttackCards { get { return attackCards; }  }
+
+    [Space(10)]
+
+    [Header("Defense Cards")]
+    [SerializeField]
+    private List<CardModel> defenseCards;
+
+
+    [HideInInspector]
+    public List<CardModel> DefenseCards { get { return defenseCards; } }
+
+    [Space(10)]
+
+    [Header("Misc Cards")]
+    [SerializeField]
+    private List<CardModel> miscCards;
+}
+
+[System.Serializable]
+public class EnemyStats
+{
+
+    public EnemyView enemyView;
+    public EnemyStats(EnemyStats enemyStats, EnemyView enemyView)
+    {
+        this.MaxHealth = enemyStats.MaxHealth;
+        this._health = enemyStats._health;
+        this.enemyView = enemyView;
+        Health = this.MaxHealth;
+    }
 
     public int MaxHealth;
-
-
-
-
     public ObservableVariable<int> obvHealth = new ObservableVariable<int>();
     private int _health;
     public int Health
@@ -29,29 +63,9 @@ public class EnemyModel : ScriptableObject
     }
 
 
-
-    public bool isStunned;
-
-    [Header("Attack Cards")]
-    [SerializeField]
-    private List<CardModel> attackCards;
-
-    [Space(10)]
-
-    [Header("Defense Cards")]
-    [SerializeField]
-    private List<CardModel> defenseCards;
-
-    [Space(10)]
-
-    [Header("Misc Cards")]
-    [SerializeField]
-    private List<CardModel> miscCards;
-
-
     public void InitEnemyStats()
     {
-        Health = MaxHealth;
+
     }
     public void ReduceHealth(int Amount)
     {
@@ -59,17 +73,16 @@ public class EnemyModel : ScriptableObject
         Health -= Amount;
         if (_health <= 0)
         {
-            enemyDeadEvent.Invoke();
+            enemyView.enemyDeadEvent.Invoke();
+
         }
     }
     public void Stunned()
     {
-        isStunned = true;
-        EnemyLogger.instance.Showlog("isStunned " + isStunned);
+
     }
 
-    public  void PlayAttackCard()
-    {
-      //  attackCards[0].cardEffects.ForEach(x => x.ApplyEffectToTarget(FindAnyObjectByType<PlayerContext>())); // to be refactored
-    }
+
+
+    public bool isStunned;
 }

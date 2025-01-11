@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 24321709172444161}
   - component: {fileID: 24321709172444162}
-  - component: {fileID: 24321709172444163}
   - component: {fileID: 3490818642108431321}
   - component: {fileID: 464702639720059939}
   - component: {fileID: 7150362741928925361}
@@ -38,9 +37,9 @@ RectTransform:
   - {fileID: 24321709338771999}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0.5}
-  m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 192.4, y: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 196, y: 324}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &24321709172444162
@@ -51,36 +50,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 24321709172444174}
   m_CullTransparentMesh: 1
---- !u!114 &24321709172444163
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 24321709172444174}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: e28bdf54edd12a949af11a3819035a41, type: 3}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
 --- !u!114 &3490818642108431321
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -94,7 +63,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rectTransform: {fileID: 24321709172444161}
-  image: {fileID: 24321709172444163}
+  image: {fileID: 0}
   canvasGroup: {fileID: 7150362741928925361}
   selectionAnimation: {fileID: 11400000, guid: 08e8344a74fd418428971a9fd9fddf67, type: 2}
   cardNameTextMesh: {fileID: 24321709338771998}
@@ -102,6 +71,7 @@ MonoBehaviour:
   _startingParent: {fileID: 0}
   _startingPos: {x: 0, y: 0, z: 0}
   cardModel: {fileID: 0}
+  cardUI: {fileID: 0}
 --- !u!114 &464702639720059939
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -142,7 +112,7 @@ MonoBehaviour:
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
   m_Interactable: 1
-  m_TargetGraphic: {fileID: 24321709172444163}
+  m_TargetGraphic: {fileID: 0}
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
@@ -326,10 +296,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 24321709172444161}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -1.97, y: 23.65}
-  m_SizeDelta: {x: 192.07, y: 196.34}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &9218235945598140855
 CanvasRenderer:
@@ -359,7 +329,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 00fbb4588136cde4fbf9001df788bcfb, type: 3}
+  m_Sprite: {fileID: 21300000, guid: fe299e6cfdaaa0744b7cffa89dec2149, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1

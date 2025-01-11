@@ -10,9 +10,6 @@ public class CardSelectionAnimation : AnimationClass
 
     public CardSelectionAnimation(CardView cardView)
     {
-
-        Debug.Log("CARD INITIALZTION ANMI");
-
         _cardView = cardView;
         animID = (animIDPrefix + _cardView.gameObject.GetInstanceID().ToString());
 
@@ -22,22 +19,14 @@ public class CardSelectionAnimation : AnimationClass
 
     public void CardSelectedAnimation()
     {
-        Debug.Log("CARD SELECTED ANMI");
-
         DOTween.Kill(animID);
-
-        _cardView.image.color = Color.cyan;
         _cardView.rectTransform.DOAnchorPosY(30, 0.5f).SetRelative().SetId(animID);
     }
 
     public void CardUnselectedAnimation()
     {
-        Debug.Log("This card Animation Stopeed");
-
-
         DOTween.Kill(animID);
 
-        _cardView.image.color = Color.white;
         _cardView.rectTransform.DOAnchorPosY(-30, 0.5f).SetRelative().SetId(animID);
     }
 

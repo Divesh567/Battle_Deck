@@ -6,7 +6,7 @@ using TMPro;
 // Contains the ui logic/Components of Deck Context
 public class DeckView : BaseView
 {
-    private List<Transform> slots;
+    private List<Transform> slots = new List<Transform>();
     public List<CardView> cards =  new List<CardView>();
 
 
@@ -15,18 +15,21 @@ public class DeckView : BaseView
     [SerializeField]
     private TextMeshProUGUI deckSizeTMP;
 
-    
+    private int deckSize;
 
-    private void Start()
+    public void InitDeckView(DeckModel deckModel)
     {
-        slots = new List<Transform>();
+        deckSize = deckModel.SizeLimit;
 
-        for(int i = 0; i < slotParent.childCount; i++) //TODO should run according to size limit of deck model
+        for(int i = 0; i < deckSize; i++)
         {
-            slots.Add(slotParent.transform.GetChild(i));
+            var newSlot = Instantiate(new GameObject("slot32132"), slotParent);
+             newSlot.AddComponent<RectTransform>();
+            slots.Add(slotParent.GetChild(i));
         }
-    }
 
+        UpdateDeckSizeTMP();
+    }
 
     public void AddCardToDeck(CardView cardView)
     {
@@ -68,7 +71,7 @@ public class DeckView : BaseView
             }
         }
 
-        deckSizeTMP.text = cards + "/3";
+        deckSizeTMP.text = $"{cards}/{deckSize}";
     }
 
 }

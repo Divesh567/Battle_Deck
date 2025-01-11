@@ -12,11 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09f03171be8e36540bfa372a3fea2816, type: 3}
   m_Name: BadCube_Model
   m_EditorClassIdentifier: 
-  MaxHealth: 100
-  obvHealth:
-    m_PersistentCalls:
-      m_Calls: []
-  isStunned: 0
+  enemyStats:
+    enemyView: {fileID: 0}
+    MaxHealth: 100
+    obvHealth:
+      m_PersistentCalls:
+        m_Calls: []
+    isStunned: 0
   attackCards:
   - {fileID: 11400000, guid: ef616a12e9d59dc4485137b3189a68d0, type: 2}
   defenseCards:

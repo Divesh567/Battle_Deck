@@ -12,4 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89af3575dad9bd34a9170d149b3aa3bd, type: 3}
   m_Name: Gun_Shoot_Damage_Effect
   m_EditorClassIdentifier: 
-  damageAmount: 20
+  UseOnSelf: 0
+  _damageAmount: 25

@@ -10,6 +10,9 @@ public class PlayerUIController
     public class StaminaReduced : UnityEvent<int> { }
     public StaminaReduced StaminaConsumedEvent = new StaminaReduced();
 
+    public class StaminaRegenerated : UnityEvent<int> { }
+    public StaminaRegenerated StaminaRegeneratedEvent = new StaminaRegenerated();
+
     public class DamageTaken : UnityEvent<int> { }
     public DamageTaken DamageTakenEvent = new DamageTaken();
 
@@ -22,6 +25,7 @@ public class PlayerUIController
         _view.Init(model);
 
         StaminaConsumedEvent.AddListener(OnStaminaConsumedEvent);
+        DamageTakenEvent.AddListener(OnDamageTakenEvent);
     }
 
     
@@ -31,9 +35,15 @@ public class PlayerUIController
         
     }
 
+    public void OnStaminaRegeneratedEvent(int amount)
+    {
+        _model.StaminaRegeneratedEvent.Invoke(amount);
+
+    }
+
     public void OnDamageTakenEvent(int amount)
     {
-        _model.StaminaConsumedEvent.Invoke(amount);
+        _model.HealthReducedEvent.Invoke(amount);
     }
 
 

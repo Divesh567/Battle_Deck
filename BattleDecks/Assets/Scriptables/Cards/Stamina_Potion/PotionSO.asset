@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0d58d75641f1674f9b5e7467da191a1, type: 3}
   m_Name: PotionSO
   m_EditorClassIdentifier: 
-  CardName: Potion
-  CardIndex: 2
-  cardEffects:
-  - {fileID: 0}
-  - {fileID: 0}
+  cardUIDetails:
+    cardName: Stamina Potion
+    baseArt: {fileID: 21300000, guid: fe299e6cfdaaa0744b7cffa89dec2149, type: 3}
+    mainArt: {fileID: 21300000, guid: a20d322c5e65a6746808e67a31dfe555, type: 3}
+    cardInfo: +25
+  _cardEffects: []

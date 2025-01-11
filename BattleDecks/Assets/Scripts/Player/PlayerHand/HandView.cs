@@ -1,3 +1,5 @@
+using DG.Tweening;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -34,8 +36,14 @@ public class HandView : MonoBehaviour
     [Header("UI ELEMENTS")]
     public List<CardView> cardsInHand = new List<CardView>();
     public RectTransform cardSlotsParent;
-    public List<RectTransform> cardSlots = new List<RectTransform>();
+    public CanvasGroup cardsParentCanvasGroup;
+
+    private List<RectTransform> cardSlots = new List<RectTransform>();
+    public List<RectTransform> CardSlots { get { return cardSlots; } }
+
+
     public GameObject cardPrefabObject;
+
     [SerializeField]
     private Button endTurnButton;
 
@@ -43,25 +51,70 @@ public class HandView : MonoBehaviour
 
     private CardView selectedCard = new CardView();
 
+    private int handLimit = 3;
+    public int HandLimit { get { return handLimit; } }
+
+
+    public InventoryController inventoryController;
+    public Transform inventoryParent;
+
     private void Start()
     {
         endTurnButton.onClick.AddListener(OnTurnEnded);
+        DisableHand();
     }
 
     public void SpawnCards(List<CardModel> selectedcards)
     { 
-        for(int i = 0; i < selectedcards.Count; i++) // instantiate cards unitl hand limit is reached
+        for (int i = 0; i < selectedcards.Count; i++) // instantiate cards unitl hand limit is reached
         {
-            cardSlots.Add(cardSlotsParent.GetChild(i).GetComponent<RectTransform>());
-
-
-            var newCardObj = Instantiate(cardPrefabObject, cardSlots[i]); 
+            var newCardObj = Instantiate(cardPrefabObject, inventoryParent);
             var newCard = newCardObj.GetComponent<CardView>();
-
-
             cardsInHand.Add(newCard); // maintain a list of cards in hand
             newCard.CardModel = selectedcards[i]; // setup cards based on their model
+
+            inventoryController.AddCardToInventory(newCard);
+
         }
+
+        for (int i = 0; i < handLimit; i++)
+        {
+            AddNewCard();
+        }
+    }
+
+    public void  AddNewCard()
+    {
+        if (cardSlotsParent.childCount >= handLimit) return;
+
+        Debug.Log("HAND ADDED NEW SLOT");
+        int newSlotIndex = CreateNewCardSlot();
+
+        GetAndAddCardFromInventory(newSlotIndex);
+    }
+
+    public int CreateNewCardSlot()
+    {
+        var newSlot = Instantiate(new GameObject("slot444234234"), cardSlotsParent);
+        int newSlotIndex = cardSlotsParent.childCount - 1;
+
+        newSlot.AddComponent<RectTransform>();
+        cardSlots.Add(cardSlotsParent.GetChild(newSlotIndex).GetComponent<RectTransform>());
+
+        return newSlotIndex;
+    }
+
+    public void GetAndAddCardFromInventory(int newParentIndex)
+    {
+        CardView drawCard = inventoryController.allCards[0];
+
+        drawCard.transform.SetParent(cardSlotsParent.GetChild(newParentIndex));
+
+        drawCard.rectTransform.anchoredPosition = Vector2.zero;
+
+        inventoryController.RemoveCardFromInventory(0);
+
+        FanLayoutGroup.OnGroupChangedEvent.Invoke();
     }
 
     public void InitCardEvents()
@@ -84,20 +137,20 @@ public class HandView : MonoBehaviour
 
         if (selectedCard != null)
         {
-            Debug.Log("Unselected card" + selectedCard.cardModel.cardName);
+            Debug.Log("Unselected card" + selectedCard.cardModel.cardUIDetails.CardName);
             selectedCard.CardUnSelectedEvent.Invoke();
         }
 
         if (selectedCard == selected)
         {
-            Debug.Log("Unselected card" + selectedCard.cardModel.cardName);
+            Debug.Log("Unselected card" + selectedCard.cardModel.cardUIDetails.CardName);
             selectedCard = null;
             return;
         }
 
         selectedCard = selected;
 
-        Debug.Log("Selected card" + selectedCard.cardModel.cardName);
+        Debug.Log("Selected card" + selectedCard.cardModel.cardUIDetails.CardName);
         CardSelectedEvent.Invoke(selectedCard.cardModel);
 
         selected.selectionAnimation.OnPlayAnimationEvent?.Invoke();
@@ -116,12 +169,28 @@ public class HandView : MonoBehaviour
         {
             if(card == selectedCard)
             {
+                inventoryController.AddCardToInventory(card);
+                Transform cardSlot = card.transform.parent;
+
+                card.transform.SetParent(inventoryParent);
+                StartCoroutine(DestroyAndUpdateCoroutine(cardSlot.gameObject));
                 cardsInHand.Remove(card);
                 break;
             }
         }
 
         selectedCard.CardUsedEvent.Invoke();
+       
+    }
+
+    private IEnumerator DestroyAndUpdateCoroutine(GameObject childToDestroy)
+    {
+        if (childToDestroy != null)
+        {
+            Destroy(childToDestroy); // Mark for destruction
+            yield return new WaitForEndOfFrame(); // Wait until end of frame
+            FanLayoutGroup.OnGroupChangedEvent.Invoke();// Update the list after destruction
+        }
     }
 
     public void OnTurnEnded()
@@ -132,13 +201,18 @@ public class HandView : MonoBehaviour
 
     private void DisableHand()
     {
-        cardsInHand.ForEach(x => x.selectButton.interactable = false);
+        cardsParentCanvasGroup.blocksRaycasts = false;
+        cardsParentCanvasGroup.alpha = 0.5f;
+
         endTurnButton.interactable = false;
     }
 
     private void EnableHand()
     {
-        cardsInHand.ForEach(x => x.selectButton.interactable = true);
+        cardsParentCanvasGroup.alpha = 1f;
         endTurnButton.interactable = true;
+        cardsParentCanvasGroup.blocksRaycasts = true;
+
+        AddNewCard();
     }
 }

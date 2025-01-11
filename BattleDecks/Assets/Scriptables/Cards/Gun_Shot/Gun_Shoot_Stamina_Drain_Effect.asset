@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: Gun_Shoot_Stamina_Drain_Effect
   m_EditorClassIdentifier: 
   UseOnSelf: 1
-  _staminaConsumtion: 25
+  _staminaConsumtion: 10

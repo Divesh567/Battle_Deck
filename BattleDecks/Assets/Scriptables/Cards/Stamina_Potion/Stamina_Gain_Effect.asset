@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: Stamina_Gain_Effect
   m_EditorClassIdentifier: 
   UseOnSelf: 1
-  _staminaConsumtion: 10
+  _staminaConsumtion: 25
