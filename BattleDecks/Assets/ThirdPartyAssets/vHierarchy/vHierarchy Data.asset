@@ -21,6 +21,7 @@ MonoBehaviour:
     - d0355cf2cdd70b94ebad55b9c315a0cc
     - a6f8c4f65d79a6947b115747e5ff3956
     - 99c9720ab356a0642a771bea13969a05
+    - 8f7e6b99c3722cf448d27da367cc5b75
     values:
     - goDatas_byGlobalId:
         keys:
@@ -85,6 +86,33 @@ MonoBehaviour:
         - globalObjectIdString: GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-44531811-0
         - globalObjectIdString: GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-80814980-0
         values:
+        - colorIndex: 1
+          iconNameOrGuid: 
+        - colorIndex: 1
+          iconNameOrGuid: 
+        - colorIndex: 1
+          iconNameOrGuid: 
+    - goDatas_byGlobalId:
+        keys:
+        - globalObjectIdString: GlobalObjectId_V1-2-8f7e6b99c3722cf448d27da367cc5b75-1400591371-0
+        - globalObjectIdString: GlobalObjectId_V1-2-8f7e6b99c3722cf448d27da367cc5b75-23044636-0
+        - globalObjectIdString: GlobalObjectId_V1-2-8f7e6b99c3722cf448d27da367cc5b75-796373581-0
+        - globalObjectIdString: GlobalObjectId_V1-2-8f7e6b99c3722cf448d27da367cc5b75-1192846009-0
+        - globalObjectIdString: GlobalObjectId_V1-2-8f7e6b99c3722cf448d27da367cc5b75-1221516912-0
+        - globalObjectIdString: GlobalObjectId_V1-2-8f7e6b99c3722cf448d27da367cc5b75-1974682470-0
+        - globalObjectIdString: GlobalObjectId_V1-2-8f7e6b99c3722cf448d27da367cc5b75-1289201866-0
+        - globalObjectIdString: GlobalObjectId_V1-2-8f7e6b99c3722cf448d27da367cc5b75-937723966-0
+        values:
+        - colorIndex: 0
+          iconNameOrGuid: EventSystem Icon
+        - colorIndex: 1
+          iconNameOrGuid: 
+        - colorIndex: 1
+          iconNameOrGuid: 
+        - colorIndex: 1
+          iconNameOrGuid: 
+        - colorIndex: 1
+          iconNameOrGuid: 
         - colorIndex: 1
           iconNameOrGuid: 
         - colorIndex: 1

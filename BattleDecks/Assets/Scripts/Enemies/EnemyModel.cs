@@ -69,7 +69,7 @@ public class EnemyStats
     }
     public void ReduceHealth(int Amount)
     {
-        EnemyLogger.instance.Showlog("Health Reduced " + _health + "-" + Amount + " = " + (_health - Amount));
+        EnemyLogger.instance.Log("Health Reduced " + _health + "-" + Amount + " = " + (_health - Amount));
         Health -= Amount;
         if (_health <= 0)
         {

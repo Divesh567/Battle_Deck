@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e674a8b27519fe642a7c3279999e44de, type: 3}
+  m_Name: CommonerSkillSet
+  m_EditorClassIdentifier: 
+  className: Commoner
+  classIcon: {fileID: 0}
+  classDescription: Not much to say about this one
+  bonusAttributes:
+    maxHealth: 0
+    maxArmor: 0
+    startingEnergy: 0
+    baseAttack: 0
+    baseMagicPower: 0
+    initiative: 0
+    baseDodgeChance: 0
+    baseCritChance: 0
+  weaponProficiencies:
+  - category: 3
+    level: 1
+    flatDamageBonus: 0
+    critBonus: 0
+  skillProficiencies: []
+  classCardPool:
+  - {fileID: 11400000, guid: f26cc7a182fbc52429eb0a9ebf5f8987, type: 2}
+  signatureCards: []

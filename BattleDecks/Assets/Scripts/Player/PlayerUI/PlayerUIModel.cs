@@ -60,14 +60,14 @@ public class PlayerUIModel : ScriptableObject
 
     void OnStaminaReduced(int amount)
     {
-        PlayerLogger.instance?.Showlog("Stamina Reduce by " + amount + " Points");
+        PlayerLogger.instance?.Log("Stamina Reduce by " + amount + " Points");
 
         Stamina -= amount;
     }
 
     void OnStaminaRegenrated(int amount)
     {
-        PlayerLogger.instance?.Showlog("Stamina Regenrated by " + amount + " Points");
+        PlayerLogger.instance?.Log("Stamina Regenrated by " + amount + " Points");
 
         Stamina += amount;
     }

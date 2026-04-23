@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 288f4fd357c381940bb8bd6d797551da, type: 3}
+  m_Name: Dog
+  m_EditorClassIdentifier: 
+  entityName: Dog
+  portrait: {fileID: 0}
+  core:
+    maxHealth: 35
+    maxArmor: 0
+    startingEnergy: 100
+    baseAttack: 10
+    baseMagicPower: 0
+    initiative: 0
+    baseDodgeChance: 20
+    baseCritChance: 0
+  resistances:
+    physical: 0
+    fire: 0
+    ice: 0
+    lightning: 0
+    poison: 0
+    arcane: 0
+    holy: 0
+    shadow: 0
+  tier: 0
+  description: A Rabid Dog
+  intentPattern: []
+  shuffleIntents: 0
+  goldMin: 0
+  goldMax: 0
+  possibleCardDrops: []
+  cardDropCount: 0

@@ -33,7 +33,7 @@ public class TurnClass : ITurnObject
         if(handContext != null)
         {
             handContext.OnTurnStartedEvent?.Invoke();
-            TurnLogger.instance.Showlog("Player Turn Started");
+            TurnLogger.instance.Log("Player Turn Started");
             return;
         }
 
@@ -41,7 +41,7 @@ public class TurnClass : ITurnObject
         if (enemyContext != null)
         {
             enemyContext.onTurnStartedEvent?.Invoke();
-            TurnLogger.instance.Showlog("Enemy Turn Started" + enemyContext.enemyModel.name);
+            TurnLogger.instance.Log("Enemy Turn Started" + enemyContext.enemyModel.name);
             return;
         }
 

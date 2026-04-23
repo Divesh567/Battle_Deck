@@ -35,6 +35,7 @@ public class EnemyContext : BaseContext , ICardAffectable
     {
         PlayerEventSystem.CardUsedEventEventCaller();
     }
+    
     public void ApplyEffectToSelf(CardEffect model)
     {
         enemyController.OnEffectApplied(model);

@@ -32,7 +32,7 @@ public class TargetSelector : MonoBehaviour
     {
         var targetContext = cardAffectable as BaseContext;
 
-        TargetSelectorLogger.instance.Showlog("TARGET ADDED " + targetContext.gameObject.name);
+        TargetSelectorLogger.instance.Log("TARGET ADDED " + targetContext.gameObject.name);
 
 
         cardAffectables.Add(cardAffectable);
@@ -46,7 +46,7 @@ public class TargetSelector : MonoBehaviour
         {
             cardAffectables.Remove(cardAffectable);
 
-            TargetSelectorLogger.instance.Showlog("TARGET REMOVED " + targetContext.gameObject.name);
+            TargetSelectorLogger.instance.Log("TARGET REMOVED " + targetContext.gameObject.name);
         }
     }
 

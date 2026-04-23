@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9be066b00ca97c459597c8b6e91fa11, type: 3}
+  m_Name: MainPlayerData
+  m_EditorClassIdentifier: 
+  entityName: Divesh
+  portrait: {fileID: 0}
+  core:
+    maxHealth: 100
+    maxArmor: 0
+    startingEnergy: 30
+    baseAttack: 1
+    baseMagicPower: 0
+    initiative: 0
+    baseDodgeChance: 10
+    baseCritChance: 0
+  resistances:
+    physical: 0
+    fire: 0
+    ice: 0
+    lightning: 0
+    poison: 0
+    arcane: 0
+    holy: 0
+    shadow: 0
+  skillSet: {fileID: 11400000, guid: 859df3f7747487c4491662cbeb042cda, type: 2}
+  startingDeck: []
+  startingGold: 10
+  handSize: 0
+  maxHandSize: 0

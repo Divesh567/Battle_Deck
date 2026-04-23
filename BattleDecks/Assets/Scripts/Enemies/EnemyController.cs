@@ -80,7 +80,7 @@ public class EnemyController : ICardAffectable
 
     private void DodgeAttack()
     {
-        EnemyLogger.instance.Showlog("Attack Dodged");
+        EnemyLogger.instance.Log("Attack Dodged");
     }
 
     private void AttackPlayer()
@@ -93,7 +93,7 @@ public class EnemyController : ICardAffectable
             damageValue = damageEffect.damageAmount;
         }
 
-        EnemyLogger.instance.Showlog(enemyModel.AttackCards[0].cardUIDetails.CardName + "attack To Player for" + damageValue + "points");
+        EnemyLogger.instance.Log(enemyModel.AttackCards[0].cardUIDetails.CardName + "attack To Player for" + damageValue + "points");
 
         PlayerEventSystem.OnDamageTakenEventCaller(damageValue);
 
@@ -128,7 +128,7 @@ public class EnemyController : ICardAffectable
 
     private void ThisTargetSelected()
     {
-        EnemyLogger.instance.Showlog("ENEMY ATTACKED");
+        EnemyLogger.instance.Log("ENEMY ATTACKED");
         TargetSelector.currentSelectedCard.cardEffects.ForEach(x => OnEffectApplied(x));
         TargetSelectedEvent.Invoke();
     }
