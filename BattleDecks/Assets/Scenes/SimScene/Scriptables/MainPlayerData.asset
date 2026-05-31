@@ -18,7 +18,7 @@ MonoBehaviour:
     maxHealth: 100
     maxArmor: 0
     startingEnergy: 30
-    baseAttack: 1
+    baseAttack: 13
     baseMagicPower: 0
     initiative: 0
     baseDodgeChance: 10
@@ -35,5 +35,5 @@ MonoBehaviour:
   skillSet: {fileID: 11400000, guid: 859df3f7747487c4491662cbeb042cda, type: 2}
   startingDeck: []
   startingGold: 10
-  handSize: 0
-  maxHandSize: 0
+  handSize: 2
+  maxHandSize: 5

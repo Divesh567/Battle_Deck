@@ -109,7 +109,7 @@ public class SimLoadoutSelector_UI : MonoBehaviour
         foreach (var w in _weapons)
         {
             // filter by proficiency: only show weapons the class has at least level 1 in
-            bool hasProficiency = false;
+            bool hasProficiency = true;
             if (skillSet?.weaponProficiencies != null)
             {
                 foreach (var prof in skillSet.weaponProficiencies)
@@ -213,6 +213,8 @@ public class SimLoadoutSelector_UI : MonoBehaviour
     // ── Start ─────────────────────────────────────────────────────────
     private void OnStartBattle()
     {
+        startBattleButton.gameObject.SetActive(false);
+        
         var entity   = _entities[entityDropdown.value];
         var skillSet = _filteredSkillSets.Length > 0
                        ? _filteredSkillSets[skillSetDropdown.value] : null;

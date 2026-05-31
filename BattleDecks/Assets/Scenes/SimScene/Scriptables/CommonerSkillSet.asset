@@ -19,7 +19,7 @@ MonoBehaviour:
     maxHealth: 0
     maxArmor: 0
     startingEnergy: 0
-    baseAttack: 0
+    baseAttack: 20
     baseMagicPower: 0
     initiative: 0
     baseDodgeChance: 0
@@ -29,7 +29,10 @@ MonoBehaviour:
     level: 1
     flatDamageBonus: 0
     critBonus: 0
-  skillProficiencies: []
+  skillProficiencies:
+  - skillName: 
+    level: 0
+    description: 
   classCardPool:
   - {fileID: 11400000, guid: f26cc7a182fbc52429eb0a9ebf5f8987, type: 2}
   signatureCards: []

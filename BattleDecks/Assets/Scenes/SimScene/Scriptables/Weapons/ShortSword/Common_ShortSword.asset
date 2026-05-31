@@ -10,21 +10,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bd7f167529eca7a4c9d29e2ba332ba07, type: 3}
-  m_Name: TreeBranch_Short
+  m_Name: Common_ShortSword
   m_EditorClassIdentifier: 
-  weaponName: Short Tree branch
-  icon: {fileID: 21300000, guid: 9a32185a4d4b2d1459c58a811ed95887, type: 3}
-  flavourText: 
-  category: 3
+  weaponName: Common ShortSword
+  icon: {fileID: 0}
+  flavourText: Can't go wrong with this one, unless your enemy knows how to fight
+    too
+  category: 0
   slot: 0
   damageType: 0
   requiredProficiencyLevel: 0
-  baseDamageMin: 10
-  baseDamageMax: 10
+  baseDamageMin: 15
+  baseDamageMax: 30
   baseAttackBonus: 0
   critMultiplier: 0
   grantedCards:
-  - {fileID: 11400000, guid: 14b97a8e340fca244867bbbe9ce97221, type: 2}
-  - {fileID: 11400000, guid: 4ffcd3de651e5a14a814c204d3736a59, type: 2}
+  - {fileID: 11400000, guid: a7aaec2591613f3428da9a82c6e77a01, type: 2}
   onHitEffects: []
   durability: 0

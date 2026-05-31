@@ -85,7 +85,7 @@ public class SimBattlePanel_UI : MonoBehaviour
 
         playerStatText.text =
             $"<b>{p.Source.entityName}</b>\n" +
-            $"HP  {HpBar(p.CurrentHP, p.MaxHP)}  {p.CurrentHP}/{p.MaxHP}\n" +
+            $"HP {p.CurrentHP}/{p.MaxHP}\n" +
             $"ARM {p.Armor}   NRG {p.Energy}/{p.Source.core.startingEnergy}\n" +
             $"Hand:{p.Hand.Count}  Draw:{p.DrawPile.Count}  Discard:{p.DiscardPile.Count}\n" +
             StatusSummary(p);
@@ -104,7 +104,7 @@ public class SimBattlePanel_UI : MonoBehaviour
 
         enemyStatText.text =
             $"<b>{e.Source.entityName}</b>  [{(e.Source is EnemyData ed2 ? ed2.tier.ToString() : "?")}]\n" +
-            $"HP  {HpBar(e.CurrentHP, e.MaxHP)}  {e.CurrentHP}/{e.MaxHP}\n" +
+            $"HP  {e.CurrentHP}/{e.MaxHP}\n" +
             $"ARM {e.Armor}{nextIntent}\n" +
             StatusSummary(e);
     }
@@ -165,14 +165,6 @@ public class SimBattlePanel_UI : MonoBehaviour
     }
 
     // ── Helpers ───────────────────────────────────────────────────────
-    private static string HpBar(int current, int max)
-    {
-        if (max <= 0) return "[]";
-        int filled = Mathf.RoundToInt((float)current / max * 10);
-        filled = Mathf.Clamp(filled, 0, 10);
-        return "[" + new string('█', filled) + new string('░', 10 - filled) + "]";
-    }
-
     private static string StatusSummary(SimEntityState s)
     {
         if (s.Statuses.Count == 0) return "";

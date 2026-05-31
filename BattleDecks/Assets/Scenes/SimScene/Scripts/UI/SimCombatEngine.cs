@@ -51,6 +51,12 @@ namespace BattleDecks.Sim
             int drawCount = active.Source is PlayerData pd ? pd.handSize : 3;
             active.OnTurnStart(drawCount);
 
+            // ✅ NEW STEP
+            ProcessStartOfTurnStatuses(active);
+
+            // ❗ STOP if combat ended from status
+            if (IsCombatOver) return;
+
             if (active.HasStatus("Stun"))
             {
                 Log($"  {active.Source.entityName} is stunned and loses their turn!");
@@ -62,6 +68,46 @@ namespace BattleDecks.Sim
                 RunEnemyTurn();
 
             OnStateChanged?.Invoke();
+        }
+        
+        private void ProcessStartOfTurnStatuses(SimEntityState entity)
+        {
+            if (entity.Statuses == null || entity.Statuses.Count == 0) return;
+
+            // Copy keys to avoid modifying dictionary during iteration
+            var statusKeys = new List<string>(entity.Statuses.Keys);
+
+            foreach (var status in statusKeys)
+            {
+                int value = entity.GetStatus(status);
+
+                switch (status)
+                {
+                    case "Bleeding":
+                        ApplyBleeding(entity, value);
+                        break;
+
+                    // Future:
+                    // case "Poison": ApplyPoison(...)
+                    // case "Burn": ApplyBurn(...)
+                }
+                
+            }
+
+            // 👇 CRITICAL: death check AFTER all ticks
+            if (entity.IsDead)
+            {
+                Log($"  {entity.Source.entityName} dies from status effects!");
+                FinishCombat();
+            }
+        }
+        
+        private void ApplyBleeding(SimEntityState target, int amount)
+        {
+            target.CurrentHP -= amount;
+
+            Log($"    {target.Source.entityName} takes {amount} bleeding damage " +
+                $"[HP: {target.CurrentHP}/{target.MaxHP}]");
         }
 
         /// <summary>Called by UI when player clicks "End Turn".</summary>
@@ -116,7 +162,8 @@ namespace BattleDecks.Sim
 
             SimEntityState target = ResolveTarget(fx.target, caster, opponent);
             int value = ComputeValue(fx, caster);
-
+            
+            Debug.Log("Effect value is" + value);
             switch (fx.effectType)
             {
                 // ── Damage ────────────────────────────────────────────
@@ -141,13 +188,13 @@ namespace BattleDecks.Sim
                     break;
 
                 // ── Statuses ──────────────────────────────────────────
-                case EffectType.ApplyBurn:      ApplyStatus(target, "Burn",      fx.statusStacks > 0 ? fx.statusStacks : value); break;
-                case EffectType.ApplyPoison:    ApplyStatus(target, "Poison",    fx.statusStacks > 0 ? fx.statusStacks : value); break;
+                case EffectType.ApplyBleeding:      ApplyStatus(target, "Bleeding", fx.baseValue); break;
+                /*case EffectType.ApplyPoison:    ApplyStatus(target, "Poison",    fx.statusStacks > 0 ? fx.statusStacks : value); break;
                 case EffectType.ApplyFreeze:    ApplyStatus(target, "Freeze",    fx.statusDuration); break;
                 case EffectType.ApplyStun:      ApplyStatus(target, "Stun",      fx.statusDuration); break;
                 case EffectType.ApplyVulnerable:ApplyStatus(target, "Vulnerable",fx.statusDuration); break;
                 case EffectType.ApplyWeak:      ApplyStatus(target, "Weak",      fx.statusDuration); break;
-                case EffectType.ApplyStrength:  ApplyStatus(target, "Strength",  fx.statusStacks > 0 ? fx.statusStacks : value); break;
+                case EffectType.ApplyStrength:  ApplyStatus(target, "Strength",  fx.statusStacks > 0 ? fx.statusStacks : value); break;*/
 
                 // ── Card manipulation ─────────────────────────────────
                 case EffectType.DrawCards:
@@ -177,36 +224,58 @@ namespace BattleDecks.Sim
             if (target == null) return;
 
             float amount = baseValue;
+            Log($"[DMG DEBUG] BaseValue: {baseValue}");
 
-            // weakness halves outgoing damage
-            if (caster.HasStatus("Weak")) amount *= 0.75f;
+            // weakness
+            if (caster.HasStatus("Weak"))
+            {
+                amount *= 0.75f;
+                Log($"[DMG DEBUG] After Weak (0.75x): {amount}");
+            }
 
-            // vulnerability increases incoming damage
-            if (target.HasStatus("Vulnerable")) amount *= 1.5f;
+            // vulnerable
+            if (target.HasStatus("Vulnerable"))
+            {
+                amount *= 1.5f;
+                Log($"[DMG DEBUG] After Vulnerable (1.5x): {amount}");
+            }
 
-            // resistance multiplier from entity data
+            /*// resistance
             float resistance = GetResistance(target, fx.damageType);
             amount *= resistance;
+            Log($"[DMG DEBUG] After Resistance ({resistance}x): {amount}");*/
 
-            // crit check
+            // crit
             bool isCrit = fx.canCrit && Random.value < (caster.Source.core.baseCritChance / 100f);
-            if (isCrit) amount *= 2f;
+            if (isCrit)
+            {
+                amount *= 2f;
+                Log($"[DMG DEBUG] After Crit (2x): {amount}");
+            }
 
-            int finalDmg = Mathf.Max(1, Mathf.RoundToInt(amount));
+            // rounding
+            int rounded = Mathf.RoundToInt(amount);
+            Log($"[DMG DEBUG] Rounded: {rounded}");
 
-            // armor absorbs first (unless piercing)
+            int finalDmg = Mathf.Max(1, rounded);
+            Log($"[DMG DEBUG] After Clamp (min 1): {finalDmg}");
+
+            // armor
             if (!fx.pierceArmor && target.Armor > 0)
             {
                 int absorbed = Mathf.Min(target.Armor, finalDmg);
                 target.Armor -= absorbed;
                 finalDmg     -= absorbed;
-                Log($"    {target.Source.entityName} absorbs {absorbed} with armor  [ARM: {target.Armor}]");
+
+                Log($"[DMG DEBUG] Armor Absorbed: {absorbed}, Remaining Damage: {finalDmg}");
             }
 
             target.CurrentHP -= finalDmg;
-            string critTag   = isCrit      ? " (CRIT!)" : "";
-            string resTag    = resistance != 1f ? $" (x{resistance:0.0} res)" : "";
-            Log($"    {target.Source.entityName} takes {finalDmg} {fx.damageType} damage{critTag}{resTag}  [HP: {target.CurrentHP}/{target.MaxHP}]");
+
+            string critTag = isCrit ? " (CRIT!)" : "";
+           // string resTag  = resistance != 1f ? $" (x{resistance:0.0} res)" : "";
+
+            Log($"    {target.Source.entityName} takes {finalDmg} {fx.damageType} damage{critTag} [HP: {target.CurrentHP}/{target.MaxHP}]");
         }
 
         private void ApplyStatus(SimEntityState target, string status, int amount)
@@ -243,7 +312,7 @@ namespace BattleDecks.Sim
             float val = fx.baseValue;
             float scaling = fx.scalingMultiplier;
 
-            val += fx.scalingSource switch
+            /*val += fx.scalingSource switch
             {
                 ScalingSource.BaseAttack    => caster.Attack * scaling,
                 ScalingSource.MagicPower    => caster.MagicPower * scaling,
@@ -251,11 +320,11 @@ namespace BattleDecks.Sim
                 ScalingSource.CardsInHand   => caster.Hand.Count * scaling,
                 ScalingSource.ArmorAmount   => caster.Armor * scaling,
                 _                           => 0,
-            };
+            };*/
 
-            // strength bonus adds to all damage/heal effects
-            if (caster.HasStatus("Strength"))
-                val += caster.GetStatus("Strength");
+            // // strength bonus adds to all damage/heal effects
+            // if (caster.HasStatus("Strength"))
+            //     val += caster.GetStatus("Strength");
 
             return Mathf.Max(0, Mathf.RoundToInt(val));
         }

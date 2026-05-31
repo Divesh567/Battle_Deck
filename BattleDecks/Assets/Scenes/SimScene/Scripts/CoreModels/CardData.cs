@@ -28,14 +28,14 @@ namespace BattleDecks.Data
 
         [Header("Cost")]
         [Min(0)] public int energyCost;
-        public bool isEthereal;                 // exhausted at end of turn if unplayed
-        public bool isInnate;                   // always in opening hand
+        /*public bool isEthereal;                 // exhausted at end of turn if unplayed
+        public bool isInnate;      */             // always in opening hand
 
         [Header("Effects")]
         public CardEffectData[] onPlayEffects;  // fires when card is played
 
-        [Header("Upgrade")]
-        public CardDataBase upgradedVersion;    // reference to the + version of this card; null if not upgradeable
+        /*[Header("Upgrade")]
+        public CardDataBase upgradedVersion;  */  // reference to the + version of this card; null if not upgradeable
     }
 
     /// <summary>
@@ -45,11 +45,13 @@ namespace BattleDecks.Data
     [CreateAssetMenu(menuName = "BattleDecks/Card/Card Data", fileName = "NewCard")]
     public class CardData : CardDataBase
     {
+        /*
         [Header("Reaction / Trap")]
         public bool isReaction;                 // can be played outside player turn
         public CardEffectData[] reactionTriggerEffects; // what triggers this card if isReaction
+        */
 
-        [Header("Weapon Requirement")]
-        public WeaponCategory[] requiredWeaponCategories; // empty = no weapon requirement
+        /*[Header("Weapon Requirement")]
+        public WeaponCategory[] requiredWeaponCategories; // empty = no weapon requirement*/
     }
 }

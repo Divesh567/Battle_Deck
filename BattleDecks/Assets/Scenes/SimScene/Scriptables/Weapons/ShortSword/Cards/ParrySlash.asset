@@ -10,21 +10,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e719b295589bc9d40ab52ba0934de6ea, type: 3}
-  m_Name: Attack_Smash
+  m_Name: ParrySlash
   m_EditorClassIdentifier: 
-  cardName: Smash
+  cardName: 
   artwork: {fileID: 0}
-  cardText: Maybe this will work
+  cardText: 
   flavourText: 
   cardType: 0
   rarity: 0
   damageType: 0
   allowedClasses: []
-  energyCost: 10
+  energyCost: 0
   isEthereal: 0
   isInnate: 0
   onPlayEffects: []
   upgradedVersion: {fileID: 0}
   isReaction: 0
   reactionTriggerEffects: []
-  requiredWeaponCategories: 03000000
+  requiredWeaponCategories: 

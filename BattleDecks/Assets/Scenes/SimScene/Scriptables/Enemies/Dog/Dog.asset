@@ -15,7 +15,7 @@ MonoBehaviour:
   entityName: Dog
   portrait: {fileID: 0}
   core:
-    maxHealth: 35
+    maxHealth: 300
     maxArmor: 0
     startingEnergy: 100
     baseAttack: 10
@@ -34,7 +34,15 @@ MonoBehaviour:
     shadow: 0
   tier: 0
   description: A Rabid Dog
-  intentPattern: []
+  intentPattern:
+  - intentName: Bite
+    intentIcon: {fileID: 0}
+    effects:
+    - {fileID: 11400000, guid: 54010a3071a779d4c8f7f423603b588b, type: 2}
+  - intentName: Claw
+    intentIcon: {fileID: 0}
+    effects:
+    - {fileID: 11400000, guid: 1d1d53b07be270c4793b8f15e2a71128, type: 2}
   shuffleIntents: 0
   goldMin: 0
   goldMax: 0

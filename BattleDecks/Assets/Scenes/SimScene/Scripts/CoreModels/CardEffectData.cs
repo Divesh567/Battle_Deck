@@ -13,12 +13,14 @@ namespace BattleDecks.Data
         // Status application
         ApplyBurn, ApplyPoison, ApplyFreeze, ApplyStun,
         ApplyVulnerable, ApplyWeak, ApplyStrength,
+        ApplyBleeding,
         // Card manipulation
         DrawCards, DiscardCards, AddCardToHand, ExhaustCard,
         // Energy
         GainEnergy, LoseEnergy,
         // Conditional trigger (fires only if predicate is true)
         Conditional,
+        
     }
 
     public enum EffectTarget
@@ -69,7 +71,6 @@ namespace BattleDecks.Data
 
         [Header("Status Effects")]
         [Min(0)] public int statusDuration;     // turns; 0 = permanent
-        [Min(0)] public int statusStacks;       // stacks applied (for stackable statuses)
 
         [Header("Conditional (EffectType.Conditional only)")]
         [TextArea(1, 2)]

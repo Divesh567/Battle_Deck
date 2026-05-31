@@ -10,20 +10,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e719b295589bc9d40ab52ba0934de6ea, type: 3}
-  m_Name: Attack_BlindSmash
+  m_Name: Attack_Smash
   m_EditorClassIdentifier: 
-  cardName: Blind Smash
+  cardName: Smash
   artwork: {fileID: 0}
-  cardText: Hit and pray
+  cardText: Maybe this will work
   flavourText: 
   cardType: 0
   rarity: 0
   damageType: 0
   allowedClasses: []
-  energyCost: 5
+  energyCost: 10
   isEthereal: 0
   isInnate: 0
-  onPlayEffects: []
+  onPlayEffects:
+  - {fileID: 11400000, guid: cb64f263d12d91249b21f09784af9d0b, type: 2}
   upgradedVersion: {fileID: 0}
   isReaction: 0
   reactionTriggerEffects: []
