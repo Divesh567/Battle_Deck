@@ -34,6 +34,9 @@ namespace BattleDecks.Sim
         // ── Active buffs/statuses ─────────────────────────────────────
         public Dictionary<string, int> Statuses { get; private set; } = new(); // name → stacks/turns
 
+        // ── Dodge ─────────────────────────────────────────────────────
+        public float DodgeChance { get; set; }   // probability each dodge stack succeeds; set by ApplyDodge
+
         // ── Flags ─────────────────────────────────────────────────────
         public bool IsDead  => CurrentHP <= 0;
         public bool IsPlayer { get; private set; }
@@ -77,6 +80,9 @@ namespace BattleDecks.Sim
 
             if (skillSet?.signatureCards != null)
                 foreach (var c in skillSet.signatureCards) DrawPile.Add(c);
+
+            if (skillSet?.classCardPool != null)
+                foreach (var c in skillSet.classCardPool) DrawPile.Add(c);
 
             if (weapon?.grantedCards != null)
                 foreach (var c in weapon.grantedCards) DrawPile.Add(c);
@@ -147,6 +153,7 @@ namespace BattleDecks.Sim
             var keys = new List<string>(Statuses.Keys);
             foreach (var k in keys)
             {
+                if (k == "Dodge") continue;   // dodge is consumed by attacks, not time
                 Statuses[k]--;
                 if (Statuses[k] <= 0) Statuses.Remove(k);
             }

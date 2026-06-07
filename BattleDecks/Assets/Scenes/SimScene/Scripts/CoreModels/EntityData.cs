@@ -18,5 +18,8 @@ namespace BattleDecks.Data
 
         [Header("Resistances")]
         public DamageResistances resistances;
+
+        [Header("Status Resistances")]
+        public StatusResistances statusResistances;
     }
 }

@@ -35,5 +35,5 @@ MonoBehaviour:
   skillSet: {fileID: 11400000, guid: 859df3f7747487c4491662cbeb042cda, type: 2}
   startingDeck: []
   startingGold: 10
-  handSize: 2
+  handSize: 4
   maxHandSize: 5

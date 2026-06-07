@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 288f4fd357c381940bb8bd6d797551da, type: 3}
+  m_Name: Bandit
+  m_EditorClassIdentifier: 
+  entityName: Bandit
+  portrait: {fileID: 0}
+  core:
+    maxHealth: 140
+    maxArmor: 0
+    startingEnergy: 100
+    baseAttack: 12
+    baseMagicPower: 0
+    initiative: 18
+    baseDodgeChance: 15
+    baseCritChance: 5
+  resistances:
+    physical: 1
+    fire: 1
+    ice: 1
+    lightning: 1
+    poison: 1
+    arcane: 1
+    holy: 1
+    shadow: 1
+  statusResistances:
+    stun: 0.25
+    bleeding: 0
+    vulnerable: 0
+  tier: 0
+  description: A street thug with a long knife. Precise, fast, and experienced enough
+    to be dangerous.
+  intentPattern:
+  - intentName: Quick Stab
+    intentIcon: {fileID: 0}
+    effects:
+    - {fileID: 11400000, guid: 1a2b0001000000001234567890abcd01, type: 2}
+  - intentName: Slash
+    intentIcon: {fileID: 0}
+    effects:
+    - {fileID: 11400000, guid: 1a2b0001000000001234567890abcd02, type: 2}
+    - {fileID: 11400000, guid: 1a2b0001000000001234567890abcd03, type: 2}
+  - intentName: Quick Stab
+    intentIcon: {fileID: 0}
+    effects:
+    - {fileID: 11400000, guid: 1a2b0001000000001234567890abcd01, type: 2}
+  - intentName: Gut Stab
+    intentIcon: {fileID: 0}
+    effects:
+    - {fileID: 11400000, guid: 1a2b0001000000001234567890abcd04, type: 2}
+  shuffleIntents: 0
+  goldMin: 8
+  goldMax: 20
+  possibleCardDrops: []
+  cardDropCount: 0

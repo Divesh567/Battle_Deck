@@ -70,7 +70,11 @@ namespace BattleDecks.Data
         public float scalingMultiplier;         // baseValue + (scalingStat * multiplier)
 
         [Header("Status Effects")]
-        [Min(0)] public int statusDuration;     // turns; 0 = permanent
+        [Min(0)] public int statusDuration;         // turns; 0 = permanent
+        [Range(0f, 1f)] public float applyChance;   // 0 = always applies; values > 0 are the probability the status lands
+
+        [Header("Dodge")]
+        [Range(0f, 1f)] public float dodgeChance;   // GainDodge effects only: probability each dodge attempt succeeds
 
         [Header("Conditional (EffectType.Conditional only)")]
         [TextArea(1, 2)]
@@ -82,5 +86,9 @@ namespace BattleDecks.Data
         public bool canCrit;
         public bool pierceArmor;
         public bool triggerOnHitEffects;        // does this hit proc weapon on-hit effects?
+
+        [Header("Miss")]
+        [Range(0f, 1f)] public float missChance;    // 0 = never misses; only used on damage effects
+        public CardEffectData[] onMissEffects;       // fires on the CASTER when this attack misses (e.g. self-expose)
     }
 }

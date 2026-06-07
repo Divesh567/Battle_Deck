@@ -187,14 +187,21 @@ namespace BattleDecks.Sim
                     Log($"    {target.Source.entityName} gains {value} armor  [ARM: {target.Armor}]");
                     break;
 
+                case EffectType.GainDodge:
+                    ApplyDodge(target, value, fx.dodgeChance);
+                    break;
+
                 // ── Statuses ──────────────────────────────────────────
-                case EffectType.ApplyBleeding:      ApplyStatus(target, "Bleeding", fx.baseValue); break;
-                /*case EffectType.ApplyPoison:    ApplyStatus(target, "Poison",    fx.statusStacks > 0 ? fx.statusStacks : value); break;
-                case EffectType.ApplyFreeze:    ApplyStatus(target, "Freeze",    fx.statusDuration); break;
-                case EffectType.ApplyStun:      ApplyStatus(target, "Stun",      fx.statusDuration); break;
-                case EffectType.ApplyVulnerable:ApplyStatus(target, "Vulnerable",fx.statusDuration); break;
-                case EffectType.ApplyWeak:      ApplyStatus(target, "Weak",      fx.statusDuration); break;
-                case EffectType.ApplyStrength:  ApplyStatus(target, "Strength",  fx.statusStacks > 0 ? fx.statusStacks : value); break;*/
+                case EffectType.ApplyBleeding:
+                    TryApplyStatus(target, "Bleeding",   fx.baseValue,      fx.applyChance, target.Source.statusResistances.bleeding);   break;
+                case EffectType.ApplyStun:
+                    TryApplyStatus(target, "Stun",       fx.statusDuration, fx.applyChance, target.Source.statusResistances.stun);        break;
+                case EffectType.ApplyVulnerable:
+                    TryApplyStatus(target, "Vulnerable", fx.statusDuration, fx.applyChance, target.Source.statusResistances.vulnerable);  break;
+                /*case EffectType.ApplyPoison:   TryApplyStatus(target, "Poison",   fx.baseValue,      fx.applyChance, 0f); break;
+                case EffectType.ApplyFreeze:     TryApplyStatus(target, "Freeze",   fx.statusDuration, fx.applyChance, 0f); break;
+                case EffectType.ApplyWeak:       TryApplyStatus(target, "Weak",     fx.statusDuration, fx.applyChance, 0f); break;
+                case EffectType.ApplyStrength:   TryApplyStatus(target, "Strength", fx.baseValue,      fx.applyChance, 0f); break;*/
 
                 // ── Card manipulation ─────────────────────────────────
                 case EffectType.DrawCards:
@@ -222,6 +229,33 @@ namespace BattleDecks.Sim
         private void ApplyDamage(CardEffectData fx, SimEntityState caster, SimEntityState target, int baseValue)
         {
             if (target == null) return;
+
+            // miss
+            if (fx.missChance > 0f && Random.value < fx.missChance)
+            {
+                Log($"    {caster.Source.entityName}'s attack misses!");
+                if (fx.onMissEffects != null && fx.onMissEffects.Length > 0)
+                    ResolveEffects(fx.onMissEffects, caster, target);
+                return;
+            }
+
+            // dodge — one stack consumed per incoming attack regardless of success
+            if (target.HasStatus("Dodge"))
+            {
+                bool dodged = Random.value < target.DodgeChance;
+                target.Statuses["Dodge"]--;
+                if (target.Statuses["Dodge"] <= 0)
+                {
+                    target.Statuses.Remove("Dodge");
+                    target.DodgeChance = 0f;
+                }
+                if (dodged)
+                {
+                    Log($"    {target.Source.entityName} dodges the attack!  [Dodge stacks left: {target.GetStatus("Dodge")}]");
+                    return;
+                }
+                Log($"    {target.Source.entityName}'s dodge fails!  [Dodge stacks left: {target.GetStatus("Dodge")}]");
+            }
 
             float amount = baseValue;
             Log($"[DMG DEBUG] BaseValue: {baseValue}");
@@ -276,6 +310,34 @@ namespace BattleDecks.Sim
            // string resTag  = resistance != 1f ? $" (x{resistance:0.0} res)" : "";
 
             Log($"    {target.Source.entityName} takes {finalDmg} {fx.damageType} damage{critTag} [HP: {target.CurrentHP}/{target.MaxHP}]");
+        }
+
+        private void ApplyDodge(SimEntityState target, int stacks, float chance)
+        {
+            target.ApplyStatus("Dodge", stacks);
+            target.DodgeChance = chance;
+            Log($"    {target.Source.entityName} prepares to dodge  " +
+                $"[{target.GetStatus("Dodge")} stack(s), {Mathf.RoundToInt(chance * 100)}% chance each]");
+        }
+
+        private void TryApplyStatus(SimEntityState target, string status, int amount, float applyChance, float resistance)
+        {
+            // roll 1: base apply chance (applyChance == 0 means always applies)
+            float effectiveChance = applyChance > 0f ? applyChance : 1f;
+            if (Random.value > effectiveChance)
+            {
+                Log($"    {status} failed to apply to {target.Source.entityName}.");
+                return;
+            }
+
+            // roll 2: target's resistance to this status
+            if (resistance > 0f && Random.value < resistance)
+            {
+                Log($"    {target.Source.entityName} resisted {status}!");
+                return;
+            }
+
+            ApplyStatus(target, status, amount);
         }
 
         private void ApplyStatus(SimEntityState target, string status, int amount)

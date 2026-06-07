@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Battle Deck — Combat Dashboard</title>
+<style>
+  /* ── Reset & Base ───────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:        #0f1117;
+    --surface:   #181c27;
+    --surface2:  #1f2436;
+    --surface3:  #252b3d;
+    --border:    #2e3650;
+    --border2:   #3d4668;
+    --text:      #e2e6f0;
+    --text-dim:  #8891aa;
+    --text-faint:#4e5878;
+    --accent:    #5b8def;
+    --accent2:   #3d6dd4;
+    --green:     #4ade80;
+    --yellow:    #facc15;
+    --orange:    #fb923c;
+    --red:       #f87171;
+    --purple:    #c084fc;
+    --cyan:      #22d3ee;
+    --pink:      #f472b6;
+    --radius:    8px;
+    --radius-lg: 12px;
+  }
+  html { height: 100%; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── Top Bar ────────────────────────────────────────────────────── */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    flex-shrink: 0;
+    height: 52px;
+  }
+  .topbar-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .topbar-title span { color: var(--text-dim); font-weight: 400; font-size: 13px; margin-left: 6px; }
+  .tab-nav { display: flex; gap: 4px; }
+  .tab-btn {
+    padding: 6px 18px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { background: var(--surface2); color: var(--text); }
+  .tab-btn.active { background: var(--surface3); border-color: var(--border2); color: var(--accent); }
+
+  /* ── Layout ─────────────────────────────────────────────────────── */
+  .main { flex: 1; overflow: hidden; display: flex; }
+  .page { display: none; width: 100%; height: 100%; overflow-y: auto; padding: 28px 32px; }
+  .page.active { display: block; }
+
+  /* ── Typography ─────────────────────────────────────────────────── */
+  h2 { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  h3 { font-size: 14px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
+  h4 { font-size: 13px; font-weight: 600; color: var(--text-dim); margin-bottom: 8px; }
+  p  { color: var(--text-dim); line-height: 1.65; }
+
+  /* ── Cards ──────────────────────────────────────────────────────── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+  }
+  .card + .card { margin-top: 16px; }
+  .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--accent);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Grid ───────────────────────────────────────────────────────── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-auto { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+
+  /* ── Page Header ────────────────────────────────────────────────── */
+  .page-header { margin-bottom: 28px; }
+  .page-header h2 { margin-bottom: 4px; }
+  .page-header p { font-size: 13px; color: var(--text-dim); }
+
+  /* ── Step List ──────────────────────────────────────────────────── */
+  .step-list { list-style: none; counter-reset: steps; }
+  .step-list li {
+    counter-increment: steps;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .step-list li:last-child { border-bottom: none; }
+  .step-list li::before {
+    content: counter(steps);
+    min-width: 26px;
+    height: 26px;
+    background: var(--surface3);
+    border: 1px solid var(--border2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-list li .step-title { font-weight: 600; color: var(--text); font-size: 13px; }
+  .step-list li p { font-size: 13px; margin-top: 2px; }
+
+  /* ── Bullet List ────────────────────────────────────────────────── */
+  .blist { list-style: none; }
+  .blist li {
+    padding: 5px 0 5px 18px;
+    position: relative;
+    font-size: 13px;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+  .blist li:last-child { border-bottom: none; }
+  .blist li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-size: 11px;
+    top: 6px;
+  }
+  .blist li strong { color: var(--text); font-weight: 600; }
+
+  /* ── Pills / Tags ───────────────────────────────────────────────── */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+  .pill-blue   { background: rgba(91,141,239,0.15); color: #7aa8f7; border: 1px solid rgba(91,141,239,0.3); }
+  .pill-green  { background: rgba(74,222,128,0.12); color: #6ee7a0; border: 1px solid rgba(74,222,128,0.25); }
+  .pill-yellow { background: rgba(250,204,21,0.12); color: #fcd34d; border: 1px solid rgba(250,204,21,0.25); }
+  .pill-orange { background: rgba(251,146,60,0.12); color: #fdba74; border: 1px solid rgba(251,146,60,0.25); }
+  .pill-red    { background: rgba(248,113,113,0.12); color: #fca5a5; border: 1px solid rgba(248,113,113,0.25); }
+  .pill-purple { background: rgba(192,132,252,0.12); color: #d8b4fe; border: 1px solid rgba(192,132,252,0.25); }
+  .pill-cyan   { background: rgba(34,211,238,0.12);  color: #67e8f9; border: 1px solid rgba(34,211,238,0.25); }
+  .pill-gray   { background: rgba(78,88,120,0.3);    color: #8891aa; border: 1px solid var(--border2); }
+  .pill-pink   { background: rgba(244,114,182,0.12); color: #f9a8d4; border: 1px solid rgba(244,114,182,0.25); }
+
+  /* ── Stat Row ───────────────────────────────────────────────────── */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-top: 4px; }
+  .stat-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    text-align: center;
+  }
+  .stat-box .stat-val { font-size: 22px; font-weight: 700; color: var(--text); line-height: 1; }
+  .stat-box .stat-lbl { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+  .stat-box.accent .stat-val { color: var(--accent); }
+  .stat-box.green  .stat-val { color: var(--green);  }
+  .stat-box.yellow .stat-val { color: var(--yellow); }
+  .stat-box.orange .stat-val { color: var(--orange); }
+  .stat-box.red    .stat-val { color: var(--red);    }
+  .stat-box.purple .stat-val { color: var(--purple); }
+
+  /* ── Flow Diagram ───────────────────────────────────────────────── */
+  .flow { display: flex; gap: 0; align-items: stretch; flex-wrap: wrap; }
+  .flow-step {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    min-width: 130px;
+    flex: 1;
+    position: relative;
+  }
+  .flow-step .flow-num {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 4px;
+  }
+  .flow-step .flow-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .flow-step .flow-desc { font-size: 12px; color: var(--text-dim); margin-top: 3px; }
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    color: var(--text-faint);
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  /* ── Table ──────────────────────────────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    color: var(--text-dim);
+  }
+  td strong { color: var(--text); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* ── Status Badge ───────────────────────────────────────────────── */
+  .status-live   { color: var(--green);  font-size: 11px; font-weight: 600; }
+  .status-wip    { color: var(--yellow); font-size: 11px; font-weight: 600; }
+  .status-design { color: var(--text-faint); font-size: 11px; font-weight: 600; }
+
+  /* ── Damage Pipeline ────────────────────────────────────────────── */
+  .pipeline { display: flex; flex-direction: column; gap: 4px; }
+  .pipeline-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    transition: border-color 0.15s;
+  }
+  .pipeline-step:hover { border-color: var(--border2); }
+  .pipeline-step.inactive { opacity: 0.5; }
+  .pipeline-step .ps-num {
+    width: 24px;
+    height: 24px;
+    background: var(--surface3);
+    border: 1px solid var(--border2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .pipeline-step .ps-name { font-weight: 600; color: var(--text); font-size: 13px; min-width: 180px; }
+  .pipeline-step .ps-desc { font-size: 12px; color: var(--text-dim); flex: 1; }
+  .pipeline-step .ps-formula {
+    font-family: 'Consolas', monospace;
+    font-size: 12px;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3px 8px;
+    color: var(--cyan);
+    white-space: nowrap;
+  }
+
+  /* ── Data Explorer ──────────────────────────────────────────────── */
+  .explorer { display: grid; grid-template-columns: 220px 1fr; gap: 0; height: 100%; }
+  .explorer-sidebar {
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .explorer-sidebar-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .ex-tab {
+    flex: 1;
+    padding: 10px 4px;
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.15s;
+    font-family: inherit;
+    border-bottom: 2px solid transparent;
+  }
+  .ex-tab:hover { color: var(--text); background: var(--surface2); }
+  .ex-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--surface2); }
+  .explorer-list { flex: 1; overflow-y: auto; }
+  .ex-item {
+    padding: 11px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .ex-item:hover { background: var(--surface2); }
+  .ex-item.active { background: var(--surface3); border-left: 2px solid var(--accent); }
+  .ex-item-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .ex-item-sub  { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+  .ex-item-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .explorer-detail {
+    overflow-y: auto;
+    padding: 28px 32px;
+  }
+  .detail-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+  .detail-title { font-size: 22px; font-weight: 700; color: var(--text); }
+  .detail-meta  { font-size: 13px; color: var(--text-dim); margin-top: 4px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .detail-body section { margin-bottom: 22px; }
+  .detail-body section h4 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-faint);
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .detail-body section h4::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── Effect Tag ─────────────────────────────────────────────────── */
+  .effect-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface3);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 6px 10px;
+    font-size: 12px;
+    color: var(--text);
+    margin: 3px;
+  }
+  .effect-tag .et-type { color: var(--accent); font-weight: 700; }
+  .effect-tag .et-val  { color: var(--green);  font-weight: 600; }
+  .effect-tag .et-flag { color: var(--yellow); font-size: 10px; }
+
+  /* ── Intent Block ───────────────────────────────────────────────── */
+  .intent-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .intent-name { font-weight: 600; color: var(--text); font-size: 13px; margin-bottom: 6px; }
+
+  /* ── Resistance Row ─────────────────────────────────────────────── */
+  .res-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .res-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 5px 10px;
+    text-align: center;
+    min-width: 72px;
+  }
+  .res-item .res-type { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+  .res-item .res-val  { font-size: 16px; font-weight: 700; margin-top: 2px; }
+  .res-val.neutral { color: var(--text-dim); }
+  .res-val.resist  { color: var(--green); }
+  .res-val.weak    { color: var(--red);   }
+
+  /* ── Misc ───────────────────────────────────────────────────────── */
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+  .gap-sm { margin-bottom: 8px; }
+  .gap-md { margin-bottom: 16px; }
+  .gap-lg { margin-bottom: 24px; }
+  .note {
+    background: rgba(91,141,239,0.08);
+    border: 1px solid rgba(91,141,239,0.2);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #7aa8f7;
+    margin-top: 10px;
+  }
+  .warn {
+    background: rgba(250,204,21,0.08);
+    border: 1px solid rgba(250,204,21,0.2);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #fcd34d;
+    margin-top: 10px;
+  }
+  .card-mini {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+  .card-mini + .card-mini { margin-top: 6px; }
+  .card-mini .cm-name { font-weight: 700; color: var(--text); font-size: 13px; }
+  .card-mini .cm-cost { color: var(--yellow); font-weight: 600; }
+  .card-mini .cm-text { color: var(--text-dim); margin-top: 3px; font-size: 12px; }
+  .card-mini .cm-tags { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
+
+  /* ── Scrollbar ──────────────────────────────────────────────────── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #5b6790; }
+</style>
+</head>
+<body>
+
+<!-- ── Top Bar ──────────────────────────────────────────────────────── -->
+<div class="topbar">
+  <div class="topbar-title">⚔️ Battle Deck <span>Combat Dashboard</span></div>
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="showPage('core',this)">Core System</button>
+    <button class="tab-btn" onclick="showPage('rules',this)">Rules Reference</button>
+    <button class="tab-btn" onclick="showPage('explorer',this)">Data Explorer</button>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ══════════════════════════════════════════════════════════════════
+     PAGE 1 — CORE SYSTEM
+════════════════════════════════════════════════════════════════════ -->
+<div id="page-core" class="page active">
+
+  <div class="page-header">
+    <h2>Core Combat System</h2>
+    <p>How the game is structured, what drives each fight, and the flow of a round.</p>
+  </div>
+
+  <div class="grid-2 gap-md">
+
+    <!-- The Loop -->
+    <div class="card">
+      <div class="card-title">The Core Loop</div>
+      <div class="flow" style="flex-direction:column; gap:6px;">
+        <div class="flow-step">
+          <div class="flow-num">Phase 1</div>
+          <div class="flow-name">Loadout</div>
+          <div class="flow-desc">Pick Character → Class → Weapon → Enemy. Your deck and stats are assembled.</div>
+        </div>
+        <div style="text-align:center; color:var(--text-faint); font-size:18px; line-height:1;">↓</div>
+        <div class="flow-step">
+          <div class="flow-num">Phase 2</div>
+          <div class="flow-name">Initiative</div>
+          <div class="flow-desc">Higher initiative goes first. Ties → player wins.</div>
+        </div>
+        <div style="text-align:center; color:var(--text-faint); font-size:18px; line-height:1;">↓</div>
+        <div class="flow-step">
+          <div class="flow-num">Phase 3</div>
+          <div class="flow-name">Turn Loop</div>
+          <div class="flow-desc">Alternate turns until one combatant reaches 0 HP.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deck Assembly -->
+    <div class="card">
+      <div class="card-title">How Your Deck Is Built</div>
+      <ul class="blist">
+        <li><strong>Character starting deck</strong> — base cards tied to the character asset</li>
+        <li><strong>Class signature cards</strong> — cards added by the chosen skill set</li>
+        <li><strong>Weapon-granted cards</strong> — cards from the equipped weapon</li>
+        <li><strong>Shuffled together</strong> — the combined pile is shuffled at combat start</li>
+      </ul>
+      <div class="note" style="margin-top:12px;">Every loadout combination produces a different deck. No two fights play the same.</div>
+    </div>
+
+  </div>
+
+  <!-- Turn Structure -->
+  <div class="card" style="margin-top:16px;">
+    <div class="card-title">Turn Structure — Each Side</div>
+    <div class="grid-3">
+      <div>
+        <h4>① Start of Turn</h4>
+        <ul class="blist" style="font-size:12px;">
+          <li>Armor → reset to max armor</li>
+          <li>Energy → reset to starting energy</li>
+          <li>Draw cards to fill hand</li>
+          <li>Status effects tick (Bleeding deals damage)</li>
+          <li>If Stunned → skip to end of turn</li>
+        </ul>
+      </div>
+      <div>
+        <h4>② During Turn</h4>
+        <ul class="blist" style="font-size:12px;">
+          <li><strong>Player:</strong> Play any cards, any order, while energy allows</li>
+          <li>Cards are moved to discard after play</li>
+          <li>Press End Turn to pass manually</li>
+          <li><strong>Enemy:</strong> Executes its next intent automatically</li>
+          <li>Enemy's upcoming move always shown in UI</li>
+        </ul>
+      </div>
+      <div>
+        <h4>③ End of Turn</h4>
+        <ul class="blist" style="font-size:12px;">
+          <li>Entire hand discarded</li>
+          <li>All status durations tick down by 1</li>
+          <li>Statuses at 0 are removed</li>
+          <li>Turn passes to opponent</li>
+          <li>Turn counter increments</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top:16px;">
+    <!-- Deck Cycling -->
+    <div class="card">
+      <div class="card-title">Deck Cycling</div>
+      <ul class="blist">
+        <li><strong>Draw pile empty?</strong> Shuffle the discard pile into a new draw pile</li>
+        <li>Cards never leave the deck during a fight (Exhaust changes this — not yet live)</li>
+        <li>No limit on how many times the deck can cycle per fight</li>
+      </ul>
+    </div>
+
+    <!-- Energy -->
+    <div class="card">
+      <div class="card-title">Energy</div>
+      <ul class="blist">
+        <li>Each card has a fixed energy cost to play</li>
+        <li>Energy resets fully at the start of every turn</li>
+        <li>Unspent energy is <strong>lost</strong> at turn end (no carry-over)</li>
+        <li>Cards are greyed out when unaffordable</li>
+        <li>Cards can grant or drain energy as an effect</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Initiative & Armor callouts -->
+  <div class="grid-3" style="margin-top:16px;">
+    <div class="card">
+      <div class="card-title">Initiative</div>
+      <p style="font-size:13px;">Compared once at combat start. Higher value acts first. On a tie the player wins.<br><br>
+      <strong>Formula:</strong> Character base + Class bonus initiative.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Armor</div>
+      <p style="font-size:13px;">Absorbs incoming damage before HP is touched. Armor is consumed as it absorbs. Pierce Armor effects skip this entirely.<br><br>
+      <strong>Resets</strong> to max armor at the start of <em>every</em> turn.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Enemy Intent System</div>
+      <p style="font-size:13px;">Enemies use a scripted move list called Intents. By default they cycle in order. Shuffle mode picks randomly. The next move is <strong>always telegraphed</strong> to the player — a core design pillar.</p>
+    </div>
+  </div>
+
+</div><!-- /page-core -->
+
+
+<!-- ══════════════════════════════════════════════════════════════════
+     PAGE 2 — RULES REFERENCE
+════════════════════════════════════════════════════════════════════ -->
+<div id="page-rules" class="page">
+
+  <div class="page-header">
+    <h2>Rules Reference</h2>
+    <p>Damage pipeline, statuses, conditionals, card types, and all effect definitions.</p>
+  </div>
+
+  <!-- Damage Pipeline -->
+  <div class="card gap-md">
+    <div class="card-title">Damage Resolution Pipeline</div>
+    <p style="font-size:13px; margin-bottom:14px;">Every time a damage effect fires, the engine applies these steps in exact order:</p>
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="ps-num">1</div>
+        <div class="ps-name">Base Value</div>
+        <div class="ps-desc">Start with the flat base value from the effect asset.</div>
+        <div class="ps-formula">damage = baseValue</div>
+      </div>
+      <div class="pipeline-step inactive">
+        <div class="ps-num">2</div>
+        <div class="ps-name">Stat Scaling <span class="pill pill-yellow" style="margin-left:6px;">Not Active</span></div>
+        <div class="ps-desc">Add scaling contribution from Base Attack, Magic Power, Cards in Hand, etc. System is designed — currently disabled.</div>
+        <div class="ps-formula">+ (stat × multiplier)</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="ps-num">3</div>
+        <div class="ps-name">Weak Modifier</div>
+        <div class="ps-desc">If the <strong>attacker</strong> has Weak status, multiply damage down.</div>
+        <div class="ps-formula">× 0.75 if Weak</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="ps-num">4</div>
+        <div class="ps-name">Vulnerable Modifier</div>
+        <div class="ps-desc">If the <strong>target</strong> has Vulnerable status, multiply damage up.</div>
+        <div class="ps-formula">× 1.50 if Vulnerable</div>
+      </div>
+      <div class="pipeline-step inactive">
+        <div class="ps-num">5</div>
+        <div class="ps-name">Elemental Resistance <span class="pill pill-yellow" style="margin-left:6px;">Not Active</span></div>
+        <div class="ps-desc">Apply target's resistance multiplier for the damage type. Data is modelled; step is disabled.</div>
+        <div class="ps-formula">× resistance</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="ps-num">6</div>
+        <div class="ps-name">Critical Hit</div>
+        <div class="ps-desc">If the effect has <em>Can Crit</em> enabled and a random roll beats the attacker's crit chance.</div>
+        <div class="ps-formula">× 2.0 on crit</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="ps-num">7</div>
+        <div class="ps-name">Round & Clamp</div>
+        <div class="ps-desc">Round to nearest integer. No hit can deal less than 1 damage.</div>
+        <div class="ps-formula">max(1, round(x))</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="ps-num">8</div>
+        <div class="ps-name">Armor Absorption</div>
+        <div class="ps-desc">If effect does <em>not</em> pierce armor, armor absorbs damage first. Armor is reduced by the amount absorbed.</div>
+        <div class="ps-formula">armor soaks first</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="ps-num">9</div>
+        <div class="ps-name">Apply to HP</div>
+        <div class="ps-desc">Remaining damage is subtracted from the target's current HP.</div>
+        <div class="ps-formula">HP -= finalDmg</div>
+      </div>
+    </div>
+    <div class="warn">Steps marked <strong>Not Active</strong> are fully modelled in data but their calculation is commented out in the engine.</div>
+  </div>
+
+  <!-- Status Effects -->
+  <div class="card" style="margin-top:16px;">
+    <div class="card-title">Status Effects</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Effect</th>
+          <th>Timing</th>
+          <th>Stacks?</th>
+          <th>State</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Bleeding</strong></td>
+          <td>Deal damage equal to stack count at start of turn</td>
+          <td>Start of affected entity's turn</td>
+          <td>✓ Stacks</td>
+          <td><span class="status-live">● Live</span></td>
+        </tr>
+        <tr>
+          <td><strong>Stun</strong></td>
+          <td>Lose your entire turn</td>
+          <td>Start of turn check</td>
+          <td>Duration</td>
+          <td><span class="status-wip">◐ Logic exists, apply disabled</span></td>
+        </tr>
+        <tr>
+          <td><strong>Weak</strong></td>
+          <td>All outgoing damage –25%</td>
+          <td>Applied during damage calc</td>
+          <td>Duration</td>
+          <td><span class="status-wip">◐ Check exists, apply disabled</span></td>
+        </tr>
+        <tr>
+          <td><strong>Vulnerable</strong></td>
+          <td>All incoming damage +50%</td>
+          <td>Applied during damage calc</td>
+          <td>Duration</td>
+          <td><span class="status-wip">◐ Check exists, apply disabled</span></td>
+        </tr>
+        <tr>
+          <td><strong>Strength</strong></td>
+          <td>Flat bonus added to all outgoing damage</td>
+          <td>During value calculation</td>
+          <td>✓ Stacks</td>
+          <td><span class="status-wip">◐ Hook exists, disabled</span></td>
+        </tr>
+        <tr>
+          <td><strong>Poison</strong></td>
+          <td>Periodic damage (likely non-stacking)</td>
+          <td>Start of turn</td>
+          <td>TBD</td>
+          <td><span class="status-design">○ Designed, not built</span></td>
+        </tr>
+        <tr>
+          <td><strong>Burn</strong></td>
+          <td>Periodic fire damage</td>
+          <td>Start of turn</td>
+          <td>TBD</td>
+          <td><span class="status-design">○ Referenced in conditionals</span></td>
+        </tr>
+        <tr>
+          <td><strong>Freeze</strong></td>
+          <td>TBD — referenced in condition system</td>
+          <td>TBD</td>
+          <td>TBD</td>
+          <td><span class="status-design">○ Designed, not defined</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="note" style="margin-top:12px;">All status values tick down by 1 at the end of each turn. A status reaching 0 is automatically removed.</div>
+  </div>
+
+  <div class="grid-2" style="margin-top:16px;">
+
+    <!-- Conditionals -->
+    <div class="card">
+      <div class="card-title">Conditional Effects</div>
+      <p style="font-size:13px; margin-bottom:12px;">A <strong>Conditional</strong> effect checks a state and branches to a "then" or "else" effect array. Both branches are full effect lists — they can contain further conditionals.</p>
+      <h4 style="font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px;">Supported Conditions</h4>
+      <div style="display:flex; flex-wrap:wrap; gap:6px;">
+        <span class="pill pill-red">Target is Burning</span>
+        <span class="pill pill-green">Target is Poisoned</span>
+        <span class="pill pill-yellow">Target is Stunned</span>
+        <span class="pill pill-cyan">Target is Frozen</span>
+        <span class="pill pill-orange">Target is Vulnerable</span>
+        <span class="pill pill-blue">Caster at Full HP</span>
+        <span class="pill pill-red">Caster at Low HP ≤25%</span>
+      </div>
+    </div>
+
+    <!-- Effect Flags -->
+    <div class="card">
+      <div class="card-title">Effect Flags</div>
+      <table>
+        <thead>
+          <tr><th>Flag</th><th>What it does</th><th>State</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Can Crit</strong></td>
+            <td>Effect is eligible for a critical hit (×2 damage)</td>
+            <td><span class="status-live">● Live</span></td>
+          </tr>
+          <tr>
+            <td><strong>Pierce Armor</strong></td>
+            <td>Damage bypasses armor entirely</td>
+            <td><span class="status-live">● Live</span></td>
+          </tr>
+          <tr>
+            <td><strong>Trigger On-Hit</strong></td>
+            <td>Hit counts as a weapon hit for on-hit procs</td>
+            <td><span class="status-design">○ Designed, procs not built</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- Effect Types Reference -->
+  <div class="card" style="margin-top:16px;">
+    <div class="card-title">All Effect Types</div>
+    <div class="grid-3" style="gap:8px;">
+      <div>
+        <h4>Damage</h4>
+        <div style="display:flex; flex-wrap:wrap; gap:5px;">
+          <span class="pill pill-red">Deal Damage</span>
+          <span class="pill pill-red">All Enemies</span>
+          <span class="pill pill-red">Random Enemy</span>
+        </div>
+      </div>
+      <div>
+        <h4>Healing</h4>
+        <div style="display:flex; flex-wrap:wrap; gap:5px;">
+          <span class="pill pill-green">Heal</span>
+          <span class="pill pill-green">Heal All Allies</span>
+        </div>
+      </div>
+      <div>
+        <h4>Defense</h4>
+        <div style="display:flex; flex-wrap:wrap; gap:5px;">
+          <span class="pill pill-blue">Gain Armor</span>
+          <span class="pill pill-gray">Gain Dodge</span>
+        </div>
+      </div>
+      <div>
+        <h4>Status Application</h4>
+        <div style="display:flex; flex-wrap:wrap; gap:5px;">
+          <span class="pill pill-red">Apply Burn</span>
+          <span class="pill pill-green">Apply Poison</span>
+          <span class="pill pill-cyan">Apply Freeze</span>
+          <span class="pill pill-yellow">Apply Stun</span>
+          <span class="pill pill-orange">Apply Vulnerable</span>
+          <span class="pill pill-gray">Apply Weak</span>
+          <span class="pill pill-purple">Apply Strength</span>
+          <span class="pill pill-pink">Apply Bleeding</span>
+        </div>
+      </div>
+      <div>
+        <h4>Card Manipulation</h4>
+        <div style="display:flex; flex-wrap:wrap; gap:5px;">
+          <span class="pill pill-blue">Draw Cards</span>
+          <span class="pill pill-gray">Discard Cards</span>
+          <span class="pill pill-gray">Add to Hand</span>
+          <span class="pill pill-gray">Exhaust Card</span>
+        </div>
+      </div>
+      <div>
+        <h4>Energy & Special</h4>
+        <div style="display:flex; flex-wrap:wrap; gap:5px;">
+          <span class="pill pill-yellow">Gain Energy</span>
+          <span class="pill pill-red">Lose Energy</span>
+          <span class="pill pill-purple">Conditional</span>
+        </div>
+      </div>
+    </div>
+    <div class="warn" style="margin-top:12px;">Discard Cards, Add to Hand, and Exhaust Card exist in the enum but are <strong>not yet handled</strong> in the engine's switch statement — playing a card with these effects does nothing currently.</div>
+  </div>
+
+  <!-- Scaling Sources -->
+  <div class="card" style="margin-top:16px;">
+    <div class="card-title">Scaling Sources <span class="pill pill-yellow" style="margin-left:8px; font-size:11px;">System Designed — Not Active</span></div>
+    <p style="font-size:13px; margin-bottom:12px;">Effects can scale their value with a stat: <code style="background:var(--surface3); padding:1px 5px; border-radius:3px; font-size:12px; color:var(--cyan);">finalValue = baseValue + (stat × multiplier)</code></p>
+    <div style="display:flex; flex-wrap:wrap; gap:6px;">
+      <span class="pill pill-orange">Base Attack</span>
+      <span class="pill pill-purple">Magic Power</span>
+      <span class="pill pill-red">Missing Health</span>
+      <span class="pill pill-blue">Cards in Hand</span>
+      <span class="pill pill-cyan">Armor Amount</span>
+      <span class="pill pill-gray">Turns Elapsed</span>
+    </div>
+  </div>
+
+  <!-- Card Classifications -->
+  <div class="grid-2" style="margin-top:16px;">
+    <div class="card">
+      <div class="card-title">Card Types</div>
+      <table>
+        <thead><tr><th>Type</th><th>Intent</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pill pill-red">Attack</span></td><td>Deals damage or applies offensive effects</td></tr>
+          <tr><td><span class="pill pill-blue">Skill</span></td><td>Defensive, support, or utility effects</td></tr>
+          <tr><td><span class="pill pill-purple">Power</span></td><td>Persistent passive — not yet implemented</td></tr>
+          <tr><td><span class="pill pill-yellow">Reaction</span></td><td>Played outside your turn — not yet implemented</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">Damage Types</div>
+      <div style="display:flex; flex-wrap:wrap; gap:6px;">
+        <span class="pill pill-gray">Physical</span>
+        <span class="pill pill-red">Fire</span>
+        <span class="pill pill-cyan">Ice</span>
+        <span class="pill pill-yellow">Lightning</span>
+        <span class="pill pill-green">Poison</span>
+        <span class="pill pill-purple">Arcane</span>
+        <span class="pill pill-orange">Holy</span>
+        <span class="pill pill-pink">Shadow</span>
+      </div>
+      <div class="note" style="margin-top:10px;">Resistance multipliers per type are modelled on every entity. The resistance step in damage resolution is currently disabled.</div>
+    </div>
+  </div>
+
+  <!-- What's missing -->
+  <div class="card" style="margin-top:16px;">
+    <div class="card-title">Implementation Gaps</div>
+    <table>
+      <thead><tr><th>Feature</th><th>Status</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Status application (non-Bleed)</strong></td><td><span class="status-wip">◐ Partial</span></td><td>Apply cases commented out; tick/check logic exists</td></tr>
+        <tr><td><strong>Elemental resistances</strong></td><td><span class="status-wip">◐ Data ready</span></td><td>Lookup function exists; damage step disabled</td></tr>
+        <tr><td><strong>Stat scaling</strong></td><td><span class="status-wip">◐ Data ready</span></td><td>ComputeValue scaling block commented out</td></tr>
+        <tr><td><strong>Reaction cards</strong></td><td><span class="status-design">○ Designed</span></td><td>CardType enum + data fields exist; out-of-turn logic missing</td></tr>
+        <tr><td><strong>Ethereal / Innate</strong></td><td><span class="status-design">○ Designed</span></td><td>Fields on CardData, commented out, not implemented</td></tr>
+        <tr><td><strong>Card upgrades</strong></td><td><span class="status-design">○ Designed</span></td><td>upgradedVersion field on CardDataBase, no system built</td></tr>
+        <tr><td><strong>Discard / Exhaust / Add-to-Hand effects</strong></td><td><span class="status-design">○ Enum only</span></td><td>Not in engine switch statement</td></tr>
+        <tr><td><strong>Enemy intent UI accuracy</strong></td><td><span class="status-wip">◐ Bug</span></td><td>Always shows intent[0], not the actual next intent</td></tr>
+        <tr><td><strong>Multi-target logic</strong></td><td><span class="status-design">○ Placeholder</span></td><td>All Enemies / Random Enemy resolve to single opponent</td></tr>
+        <tr><td><strong>On-hit weapon effects</strong></td><td><span class="status-design">○ Flag exists</span></td><td>triggerOnHitEffects flag on effects; no procs system</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /page-rules -->
+
+
+<!-- ══════════════════════════════════════════════════════════════════
+     PAGE 3 — DATA EXPLORER
+════════════════════════════════════════════════════════════════════ -->
+<div id="page-explorer" class="page" style="padding:0; overflow:hidden;">
+  <div class="explorer" style="height:100%;">
+
+    <!-- Sidebar -->
+    <div class="explorer-sidebar" style="background:var(--surface);">
+      <div class="explorer-sidebar-tabs">
+        <button class="ex-tab active" onclick="showExTab('entities',this)">Entities</button>
+        <button class="ex-tab" onclick="showExTab('weapons',this)">Weapons</button>
+        <button class="ex-tab" onclick="showExTab('cards',this)">Cards</button>
+        <button class="ex-tab" onclick="showExTab('enemies',this)">Enemies</button>
+      </div>
+      <div class="explorer-list" id="ex-list"></div>
+    </div>
+
+    <!-- Detail Pane -->
+    <div class="explorer-detail" id="ex-detail">
+      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--text-faint); gap:8px;">
+        <div style="font-size:40px;">👈</div>
+        <div style="font-size:14px;">Select an item from the list</div>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /page-explorer -->
+
+</div><!-- /main -->
+
+<script>
+// ── Navigation ──────────────────────────────────────────────────────────────
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'explorer') renderExTab(currentExTab);
+}
+
+// ── Data ────────────────────────────────────────────────────────────────────
+const DATA = {
+  entities: [
+    {
+      id: 'player',
+      name: 'Divesh',
+      icon: '🧑',
+      iconBg: 'rgba(91,141,239,0.15)',
+      type: 'Player',
+      stats: {
+        'Max HP':       100,
+        'Max Armor':    0,
+        'Energy':       30,
+        'Base Attack':  13,
+        'Magic Power':  0,
+        'Initiative':   0,
+        'Dodge Chance': '10%',
+        'Crit Chance':  '0%',
+      },
+      handSize: 2,
+      maxHandSize: 5,
+      startingGold: 10,
+      startingDeck: [],
+      resistances: { Physical:0, Fire:0, Ice:0, Lightning:0, Poison:0, Arcane:0, Holy:0, Shadow:0 },
+      notes: 'Base player entity. Starting deck is empty — cards come entirely from Skill Set and Weapon.',
+    }
+  ],
+  weapons: [
+    {
+      id: 'shortsword',
+      name: 'Common ShortSword',
+      icon: '🗡️',
+      iconBg: 'rgba(91,141,239,0.15)',
+      category: 'Sword',
+      slot: 'Main Hand',
+      damageType: 'Physical',
+      requiredProficiency: 0,
+      damageRange: '15 – 30',
+      attackBonus: 0,
+      critMultiplier: 0,
+      durability: '∞',
+      flavour: "Can't go wrong with this one, unless your enemy knows how to fight too",
+      grantedCards: ['Slash'],
+      onHitEffects: [],
+    },
+    {
+      id: 'treebranch',
+      name: 'Short Tree Branch',
+      icon: '🪵',
+      iconBg: 'rgba(251,146,60,0.15)',
+      category: 'Blunt',
+      slot: 'Main Hand',
+      damageType: 'Physical',
+      requiredProficiency: 0,
+      damageRange: '10 – 10',
+      attackBonus: 0,
+      critMultiplier: 0,
+      durability: '∞',
+      flavour: '',
+      grantedCards: ['Smash', 'Blind Smash'],
+      onHitEffects: [],
+    }
+  ],
+  cards: [
+    {
+      id: 'slash',
+      name: 'Slash',
+      icon: '⚔️',
+      iconBg: 'rgba(248,113,113,0.15)',
+      type: 'Attack',
+      rarity: 'Common',
+      damageType: 'Physical',
+      energyCost: 15,
+      cardText: '',
+      flavour: '',
+      allowedClasses: [],
+      effects: [
+        { name: 'CutOpenDamage', type: 'Deal Damage', target: 'Single Enemy', damageType: 'Physical', value: 10, scaling: 'None', canCrit: false, pierceArmor: false },
+        { name: 'Bleeding Damage', type: 'Apply Bleeding', target: 'Single Enemy', damageType: 'Physical', value: 5, scaling: 'Base Attack', scalingMult: 0, duration: 3, canCrit: false, pierceArmor: false },
+      ],
+      source: 'Common ShortSword',
+    },
+    {
+      id: 'smash',
+      name: 'Smash',
+      icon: '🪓',
+      iconBg: 'rgba(251,146,60,0.15)',
+      type: 'Attack',
+      rarity: 'Common',
+      damageType: 'Physical',
+      energyCost: 10,
+      cardText: 'Maybe this will work',
+      flavour: '',
+      allowedClasses: [],
+      effects: [
+        { name: 'Blunt Damage', type: 'Deal Damage', target: 'Single Enemy', damageType: 'Physical', value: 10, scaling: 'Base Attack', scalingMult: 1, canCrit: false, pierceArmor: false },
+      ],
+      source: 'Short Tree Branch',
+    },
+    {
+      id: 'blindsmash',
+      name: 'Blind Smash',
+      icon: '💥',
+      iconBg: 'rgba(251,146,60,0.12)',
+      type: 'Attack',
+      rarity: 'Common',
+      damageType: 'Physical',
+      energyCost: 5,
+      cardText: 'Hit and pray',
+      flavour: '',
+      allowedClasses: [],
+      effects: [
+        { name: 'BluntDamage Inaccurate', type: 'Deal Damage', target: 'Single Enemy', damageType: 'Physical', value: 20, scaling: 'Base Attack', scalingMult: 1, canCrit: false, pierceArmor: false },
+      ],
+      source: 'Short Tree Branch / Class Pool',
+    },
+    {
+      id: 'block',
+      name: 'Block',
+      icon: '🛡️',
+      iconBg: 'rgba(91,141,239,0.12)',
+      type: 'Reaction',
+      rarity: 'Common',
+      damageType: 'None',
+      energyCost: 5,
+      cardText: '',
+      flavour: '',
+      allowedClasses: [],
+      effects: [],
+      source: 'Short Sword (not yet granted)',
+      notes: 'No effects authored yet.',
+    },
+    {
+      id: 'handlehit',
+      name: 'Handle Hit',
+      icon: '👊',
+      iconBg: 'rgba(192,132,252,0.12)',
+      type: 'Attack',
+      rarity: 'Common',
+      damageType: 'Physical',
+      energyCost: 0,
+      cardText: '',
+      flavour: '',
+      allowedClasses: [],
+      effects: [
+        { name: 'Blunt Damage', type: 'Deal Damage', target: 'Single Enemy', damageType: 'Physical', value: 10, scaling: 'Base Attack', scalingMult: 1, canCrit: false, pierceArmor: false },
+      ],
+      source: 'Short Sword cards',
+    },
+  ],
+  enemies: [
+    {
+      id: 'dog',
+      name: 'Dog',
+      icon: '🐕',
+      iconBg: 'rgba(248,113,113,0.12)',
+      tier: 'Minion',
+      description: 'A Rabid Dog',
+      stats: {
+        'Max HP':       300,
+        'Max Armor':    0,
+        'Energy':       100,
+        'Base Attack':  10,
+        'Magic Power':  0,
+        'Initiative':   0,
+        'Dodge Chance': '20%',
+        'Crit Chance':  '0%',
+      },
+      resistances: { Physical:0, Fire:0, Ice:0, Lightning:0, Poison:0, Arcane:0, Holy:0, Shadow:0 },
+      shuffleIntents: false,
+      intents: [
+        { name: 'Bite', effects: [{ type: 'Deal Damage', target: 'Single Enemy', value: 10, damageType: 'Physical', scaling: 'None' }] },
+        { name: 'Claw', effects: [{ type: 'Deal Damage', target: 'Single Enemy', value: 5,  damageType: 'Physical', scaling: 'None' }] },
+      ],
+      loot: { goldMin: 0, goldMax: 0, cardDrops: 0 },
+    }
+  ],
+  skillsets: [
+    {
+      id: 'commoner',
+      name: 'Commoner',
+      icon: '👤',
+      iconBg: 'rgba(139,148,184,0.15)',
+      description: 'Not much to say about this one',
+      bonuses: { 'Base Attack': '+20', 'Everything else': '+0' },
+      weaponProficiencies: [{ category: 'Blunt', level: 1 }],
+      signatureCards: [],
+      classCardPool: ['Blind Smash'],
+    }
+  ],
+};
+
+// ── Explorer Tab Logic ──────────────────────────────────────────────────────
+let currentExTab = 'entities';
+let currentItem  = null;
+
+function showExTab(tab, btn) {
+  currentExTab = tab;
+  document.querySelectorAll('.ex-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderExTab(tab);
+}
+
+function renderExTab(tab) {
+  const list = document.getElementById('ex-list');
+  list.innerHTML = '';
+  currentItem = null;
+  document.getElementById('ex-detail').innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text-faint);gap:8px;">
+      <div style="font-size:40px;">👈</div><div style="font-size:14px;">Select an item from the list</div>
+    </div>`;
+
+  let items = [];
+  if (tab === 'entities')  items = [...DATA.entities, ...DATA.skillsets];
+  if (tab === 'weapons')   items = DATA.weapons;
+  if (tab === 'cards')     items = DATA.cards;
+  if (tab === 'enemies')   items = DATA.enemies;
+
+  items.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'ex-item';
+    div.dataset.id = item.id;
+    div.innerHTML = `
+      <div class="ex-item-icon" style="background:${item.iconBg}">${item.icon}</div>
+      <div>
+        <div class="ex-item-name">${item.name}</div>
+        <div class="ex-item-sub">${getItemSub(item, tab)}</div>
+      </div>`;
+    div.onclick = () => selectItem(item, tab, div);
+    list.appendChild(div);
+  });
+}
+
+function getItemSub(item, tab) {
+  if (tab === 'entities') {
+    if (item.type) return `Player  •  HP ${item.stats['Max HP']}`;
+    return `Class  •  ATK +${item.bonuses['Base Attack']}`;
+  }
+  if (tab === 'weapons') return `${item.category}  •  ${item.damageRange} dmg`;
+  if (tab === 'cards')   return `${item.type}  •  ${item.energyCost} Energy`;
+  if (tab === 'enemies') return `${item.tier}  •  HP ${item.stats['Max HP']}`;
+  return '';
+}
+
+function selectItem(item, tab, el) {
+  document.querySelectorAll('.ex-item').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  currentItem = item;
+  renderDetail(item, tab);
+}
+
+function renderDetail(item, tab) {
+  const det = document.getElementById('ex-detail');
+
+  if (tab === 'entities') {
+    if (item.type === 'Player') {
+      det.innerHTML = entityDetail(item);
+    } else {
+      det.innerHTML = skillsetDetail(item);
+    }
+    return;
+  }
+  if (tab === 'weapons') { det.innerHTML = weaponDetail(item); return; }
+  if (tab === 'cards')   { det.innerHTML = cardDetail(item); return; }
+  if (tab === 'enemies') { det.innerHTML = enemyDetail(item); return; }
+}
+
+// ── Detail Renderers ────────────────────────────────────────────────────────
+
+function statGrid(stats) {
+  const colors = { 'Max HP':'green','Max Armor':'accent','Energy':'yellow','Base Attack':'orange','Magic Power':'purple','Initiative':'cyan','Dodge Chance':'blue','Crit Chance':'red' };
+  return `<div class="stat-grid">
+    ${Object.entries(stats).map(([k,v]) => `
+      <div class="stat-box ${colors[k]||''}">
+        <div class="stat-val">${v}</div>
+        <div class="stat-lbl">${k}</div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function resistGrid(res) {
+  const icons = { Physical:'⚔️', Fire:'🔥', Ice:'❄️', Lightning:'⚡', Poison:'☠️', Arcane:'✨', Holy:'☀️', Shadow:'🌑' };
+  return `<div class="res-grid">
+    ${Object.entries(res).map(([type, val]) => {
+      const cls = val === 0 ? 'neutral' : val < 0 ? 'weak' : 'resist';
+      const display = val === 0 ? '—' : val > 0 ? `+${val}` : `${val}`;
+      return `<div class="res-item">
+        <div class="res-type">${icons[type]||''} ${type}</div>
+        <div class="res-val ${cls}">${display}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function effectTags(effects) {
+  if (!effects || effects.length === 0) return '<span style="color:var(--text-faint);font-size:12px;font-style:italic;">No effects authored</span>';
+  return effects.map(e => `
+    <div class="effect-tag">
+      <span class="et-type">${e.type}</span>
+      <span style="color:var(--text-dim)">→</span>
+      <span>${e.target}</span>
+      ${e.value !== undefined ? `<span class="et-val">${e.value} dmg</span>` : ''}
+      ${e.scaling && e.scaling !== 'None' ? `<span class="et-flag">scales: ${e.scaling}${e.scalingMult ? ' ×'+e.scalingMult : ''}</span>` : ''}
+      ${e.duration ? `<span class="et-flag">${e.duration} turns</span>` : ''}
+      ${e.canCrit ? `<span class="et-flag">⚡ crit</span>` : ''}
+      ${e.pierceArmor ? `<span class="et-flag">🩹 pierce</span>` : ''}
+    </div>`).join('');
+}
+
+function entityDetail(p) {
+  return `
+    <div class="detail-header">
+      <div class="detail-icon" style="background:${p.iconBg}">${p.icon}</div>
+      <div>
+        <div class="detail-title">${p.name}</div>
+        <div class="detail-meta">
+          <span class="pill pill-blue">Player Entity</span>
+          <span class="pill pill-gray">Hand Size: ${p.handSize} / ${p.maxHandSize}</span>
+          <span class="pill pill-yellow">Starting Gold: ${p.startingGold}</span>
+        </div>
+      </div>
+    </div>
+    <div class="detail-body">
+      <section>
+        <h4>Core Stats</h4>
+        ${statGrid(p.stats)}
+      </section>
+      <section>
+        <h4>Elemental Resistances</h4>
+        ${resistGrid(p.resistances)}
+        <div class="note" style="margin-top:8px;">All resistances are 0 (neutral). Resistance system is modelled but inactive.</div>
+      </section>
+      <section>
+        <h4>Starting Deck</h4>
+        <p style="font-size:13px;color:var(--text-dim);">Empty — all cards come from the equipped Skill Set and Weapon.</p>
+      </section>
+      ${p.notes ? `<div class="note">${p.notes}</div>` : ''}
+    </div>`;
+}
+
+function skillsetDetail(s) {
+  return `
+    <div class="detail-header">
+      <div class="detail-icon" style="background:${s.iconBg}">${s.icon}</div>
+      <div>
+        <div class="detail-title">${s.name}</div>
+        <div class="detail-meta">
+          <span class="pill pill-purple">Skill Set</span>
+        </div>
+        <p style="font-size:13px;color:var(--text-dim);margin-top:6px;">${s.description}</p>
+      </div>
+    </div>
+    <div class="detail-body">
+      <section>
+        <h4>Stat Bonuses</h4>
+        <div class="stat-grid">
+          <div class="stat-box orange"><div class="stat-val">${s.bonuses['Base Attack']}</div><div class="stat-lbl">Base Attack</div></div>
+        </div>
+      </section>
+      <section>
+        <h4>Weapon Proficiencies</h4>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          ${s.weaponProficiencies.map(p => `<span class="pill pill-orange">🪵 ${p.category} — Level ${p.level}</span>`).join('')}
+        </div>
+        <div class="note" style="margin-top:8px;">Only weapons with category matching a proficiency (and required level ≤ proficiency level) will appear in the weapon selector for this class.</div>
+      </section>
+      <section>
+        <h4>Signature Cards</h4>
+        ${s.signatureCards.length === 0 ? '<p style="font-size:13px;color:var(--text-dim);">None authored.</p>' : s.signatureCards.map(c => `<span class="pill pill-blue">${c}</span>`).join(' ')}
+      </section>
+      <section>
+        <h4>Class Card Pool</h4>
+        ${s.classCardPool.length === 0 ? '<p style="font-size:13px;color:var(--text-dim);">Empty.</p>' : s.classCardPool.map(c => `<span class="pill pill-blue">🃏 ${c}</span>`).join(' ')}
+      </section>
+    </div>`;
+}
+
+function weaponDetail(w) {
+  return `
+    <div class="detail-header">
+      <div class="detail-icon" style="background:${w.iconBg}">${w.icon}</div>
+      <div>
+        <div class="detail-title">${w.name}</div>
+        <div class="detail-meta">
+          <span class="pill pill-orange">${w.category}</span>
+          <span class="pill pill-gray">${w.slot}</span>
+          <span class="pill pill-gray">${w.damageType}</span>
+          ${w.requiredProficiency > 0 ? `<span class="pill pill-yellow">Requires Prof. Lv ${w.requiredProficiency}</span>` : '<span class="pill pill-green">No Proficiency Required</span>'}
+        </div>
+        ${w.flavour ? `<p style="font-size:13px;color:var(--text-dim);font-style:italic;margin-top:6px;">"${w.flavour}"</p>` : ''}
+      </div>
+    </div>
+    <div class="detail-body">
+      <section>
+        <h4>Stats</h4>
+        <div class="stat-grid">
+          <div class="stat-box orange"><div class="stat-val">${w.damageRange}</div><div class="stat-lbl">Damage Range</div></div>
+          <div class="stat-box accent"><div class="stat-val">${w.attackBonus > 0 ? '+'+w.attackBonus : w.attackBonus}</div><div class="stat-lbl">ATK Bonus</div></div>
+          <div class="stat-box red"><div class="stat-val">${w.critMultiplier > 0 ? '+'+w.critMultiplier+'%' : '—'}</div><div class="stat-lbl">Crit Bonus</div></div>
+          <div class="stat-box"><div class="stat-val">${w.durability}</div><div class="stat-lbl">Durability</div></div>
+        </div>
+      </section>
+      <section>
+        <h4>Granted Cards</h4>
+        ${w.grantedCards.length === 0 ? '<p style="font-size:13px;color:var(--text-dim);">No cards granted.</p>' :
+          w.grantedCards.map(c => `<span class="pill pill-blue" style="margin:3px;">🃏 ${c}</span>`).join('')}
+        <div class="note" style="margin-top:8px;">These cards are added to your deck at loadout time.</div>
+      </section>
+      <section>
+        <h4>On-Hit Effects</h4>
+        ${w.onHitEffects.length === 0 ? '<p style="font-size:13px;color:var(--text-dim);">None — on-hit effect system not yet implemented.</p>' : ''}
+      </section>
+    </div>`;
+}
+
+function cardDetail(c) {
+  const typeColor = {Attack:'red', Skill:'blue', Power:'purple', Reaction:'yellow'}[c.type] || 'gray';
+  const rarityColor = {Common:'gray', Uncommon:'blue', Rare:'purple', Signature:'yellow'}[c.rarity] || 'gray';
+  return `
+    <div class="detail-header">
+      <div class="detail-icon" style="background:${c.iconBg}">${c.icon}</div>
+      <div>
+        <div class="detail-title">${c.name}</div>
+        <div class="detail-meta">
+          <span class="pill pill-${typeColor}">${c.type}</span>
+          <span class="pill pill-${rarityColor}">${c.rarity}</span>
+          <span class="pill pill-yellow">${c.energyCost} Energy</span>
+          ${c.damageType !== 'None' ? `<span class="pill pill-gray">${c.damageType}</span>` : ''}
+        </div>
+        ${c.cardText ? `<p style="font-size:13px;color:var(--text-dim);margin-top:6px;">${c.cardText}</p>` : ''}
+      </div>
+    </div>
+    <div class="detail-body">
+      <section>
+        <h4>Source</h4>
+        <span class="pill pill-blue">📦 ${c.source}</span>
+      </section>
+      ${c.allowedClasses && c.allowedClasses.length > 0 ? `
+      <section>
+        <h4>Class Restrictions</h4>
+        ${c.allowedClasses.map(cl => `<span class="pill pill-purple">${cl}</span>`).join(' ')}
+      </section>` : ''}
+      <section>
+        <h4>Effects on Play</h4>
+        <div>${effectTags(c.effects)}</div>
+      </section>
+      ${c.notes ? `<div class="warn" style="margin-top:8px;">${c.notes}</div>` : ''}
+    </div>`;
+}
+
+function enemyDetail(e) {
+  return `
+    <div class="detail-header">
+      <div class="detail-icon" style="background:${e.iconBg}">${e.icon}</div>
+      <div>
+        <div class="detail-title">${e.name}</div>
+        <div class="detail-meta">
+          <span class="pill pill-red">${e.tier}</span>
+          <span class="pill pill-gray">Intents: ${e.intents.length}</span>
+          <span class="pill pill-${e.shuffleIntents ? 'yellow':'green'}">${e.shuffleIntents ? 'Random Order' : 'Fixed Order'}</span>
+        </div>
+        <p style="font-size:13px;color:var(--text-dim);margin-top:6px;">${e.description}</p>
+      </div>
+    </div>
+    <div class="detail-body">
+      <section>
+        <h4>Core Stats</h4>
+        ${statGrid(e.stats)}
+      </section>
+      <section>
+        <h4>Elemental Resistances</h4>
+        ${resistGrid(e.resistances)}
+      </section>
+      <section>
+        <h4>Intent Pattern</h4>
+        ${e.intents.map((intent, i) => `
+          <div class="intent-block">
+            <div class="intent-name">${i+1}. ${intent.name}</div>
+            <div>${effectTags(intent.effects)}</div>
+          </div>`).join('')}
+        <div class="note" style="margin-top:8px;">Intent cycles ${e.shuffleIntents ? 'randomly' : 'in order'}. The next intent is always visible to the player before it fires.</div>
+      </section>
+      <section>
+        <h4>Loot</h4>
+        <div style="display:flex;gap:8px;">
+          <span class="pill pill-yellow">💰 Gold: ${e.loot.goldMin}–${e.loot.goldMax}</span>
+          <span class="pill pill-gray">🃏 Card drops: ${e.loot.cardDrops}</span>
+        </div>
+      </section>
+    </div>`;
+}
+
+// ── Init ────────────────────────────────────────────────────────────────────
+renderExTab('entities');
+</script>
+</body>
+</html>

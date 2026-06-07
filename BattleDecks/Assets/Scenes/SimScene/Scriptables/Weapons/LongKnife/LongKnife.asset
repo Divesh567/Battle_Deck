@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd7f167529eca7a4c9d29e2ba332ba07, type: 3}
+  m_Name: LongKnife
+  m_EditorClassIdentifier: 
+  weaponName: Long Knife
+  icon: {fileID: 0}
+  flavourText: Long enough to keep distance. Short enough to hide.
+  category: 2
+  slot: 0
+  damageType: 0
+  requiredProficiencyLevel: 1
+  baseDamageMin: 8
+  baseDamageMax: 16
+  baseAttackBonus: 3
+  critMultiplier: 0
+  grantedCards:
+  - {fileID: 11400000, guid: 2b3c0001000000001234567890bcde01, type: 2}
+  - {fileID: 11400000, guid: 2b3c0001000000001234567890bcde02, type: 2}
+  - {fileID: 11400000, guid: 2b3c0001000000001234567890bcde03, type: 2}
+  - {fileID: 11400000, guid: 2b3c0001000000001234567890bcde04, type: 2}
+  onHitEffects: []
+  durability: 0

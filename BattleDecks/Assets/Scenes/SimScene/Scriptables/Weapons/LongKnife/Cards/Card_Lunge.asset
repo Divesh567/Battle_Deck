@@ -10,16 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e719b295589bc9d40ab52ba0934de6ea, type: 3}
-  m_Name: Dodge
+  m_Name: Card_Lunge
   m_EditorClassIdentifier:
-  cardName: Dodge
+  cardName: Lunge
   artwork: {fileID: 0}
-  cardText: Gain 1 dodge stack (65% chance to negate the next incoming attack). Stacks with additional Dodge cards.
-  flavourText: Sometimes the best move is not to be there.
-  cardType: 1
-  rarity: 0
+  cardText: Deal 22 damage. Can crit. 25% miss chance — exposes you if missed.
+  flavourText: Everything on the line. One thrust.
+  cardType: 0
+  rarity: 1
   damageType: 0
   allowedClasses: []
-  energyCost: 10
+  energyCost: 20
   onPlayEffects:
-  - {fileID: 11400000, guid: 6f780001000000001234567890ab0001, type: 2}
+  - {fileID: 11400000, guid: 1a2b0001000000001234567890abcd05, type: 2}

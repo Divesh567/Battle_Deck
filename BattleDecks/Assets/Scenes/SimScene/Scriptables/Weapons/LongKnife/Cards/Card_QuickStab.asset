@@ -10,16 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e719b295589bc9d40ab52ba0934de6ea, type: 3}
-  m_Name: Dodge
+  m_Name: Card_QuickStab
   m_EditorClassIdentifier:
-  cardName: Dodge
+  cardName: Quick Stab
   artwork: {fileID: 0}
-  cardText: Gain 1 dodge stack (65% chance to negate the next incoming attack). Stacks with additional Dodge cards.
-  flavourText: Sometimes the best move is not to be there.
-  cardType: 1
+  cardText: Deal 10 damage. Fast and hard to react to.
+  flavourText: The knife was in his ribs before he saw it move.
+  cardType: 0
   rarity: 0
   damageType: 0
   allowedClasses: []
   energyCost: 10
   onPlayEffects:
-  - {fileID: 11400000, guid: 6f780001000000001234567890ab0001, type: 2}
+  - {fileID: 11400000, guid: 1a2b0001000000001234567890abcd01, type: 2}
