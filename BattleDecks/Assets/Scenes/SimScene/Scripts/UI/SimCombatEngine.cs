@@ -46,16 +46,18 @@ namespace BattleDecks.Sim
         public void BeginTurn()
         {
             var active = IsPlayerTurn ? Player : Enemy;
+            var other  = IsPlayerTurn ? Enemy : Player;
             Log($"─── Turn {TurnNumber}: {active.Source.entityName} ───");
 
             int drawCount = active.Source is PlayerData pd ? pd.handSize : 3;
             active.OnTurnStart(drawCount);
 
-            // ✅ NEW STEP
             ProcessStartOfTurnStatuses(active);
 
             // ❗ STOP if combat ended from status
             if (IsCombatOver) return;
+
+            EvaluateTriggers(active, other, TriggerCondition.OnTurnStart);
 
             if (active.HasStatus("Stun"))
             {
@@ -134,6 +136,12 @@ namespace BattleDecks.Sim
         public bool PlayerPlayCard(CardData card)
         {
             if (!IsPlayerTurn || IsCombatOver) return false;
+            if (!Player.IsCardPlayable(card))
+            {
+                Log($"  Cannot play {card.cardName} — it is locked!");
+                return false;
+            }
+
             if (!Player.PlayCard(card))
             {
                 Log($"  Cannot play {card.cardName} (not enough energy or not in hand)");
@@ -159,6 +167,13 @@ namespace BattleDecks.Sim
         private void ResolveEffect(CardEffectData fx, SimEntityState caster, SimEntityState opponent)
         {
             if (fx == null) return;
+
+            // success chance: 0 always succeeds; >0 is the probability the effect fires
+            if (fx.successChance > 0f && Random.value > fx.successChance)
+            {
+                Log($"    {caster.Source.entityName}'s {fx.effectName} failed!");
+                return;
+            }
 
             SimEntityState target = ResolveTarget(fx.target, caster, opponent);
             int value = ComputeValue(fx, caster);
@@ -193,15 +208,40 @@ namespace BattleDecks.Sim
 
                 // ── Statuses ──────────────────────────────────────────
                 case EffectType.ApplyBleeding:
-                    TryApplyStatus(target, "Bleeding",   fx.baseValue,      fx.applyChance, target.Source.statusResistances.bleeding);   break;
+                    TryApplyStatus(caster, target, "Bleeding",   fx.baseValue,      fx.applyChance, target.Source.statusResistances.bleeding);   break;
                 case EffectType.ApplyStun:
-                    TryApplyStatus(target, "Stun",       fx.statusDuration, fx.applyChance, target.Source.statusResistances.stun);        break;
+                    TryApplyStatus(caster, target, "Stun",       fx.statusDuration, fx.applyChance, target.Source.statusResistances.stun);        break;
                 case EffectType.ApplyVulnerable:
-                    TryApplyStatus(target, "Vulnerable", fx.statusDuration, fx.applyChance, target.Source.statusResistances.vulnerable);  break;
-                /*case EffectType.ApplyPoison:   TryApplyStatus(target, "Poison",   fx.baseValue,      fx.applyChance, 0f); break;
-                case EffectType.ApplyFreeze:     TryApplyStatus(target, "Freeze",   fx.statusDuration, fx.applyChance, 0f); break;
-                case EffectType.ApplyWeak:       TryApplyStatus(target, "Weak",     fx.statusDuration, fx.applyChance, 0f); break;
-                case EffectType.ApplyStrength:   TryApplyStatus(target, "Strength", fx.baseValue,      fx.applyChance, 0f); break;*/
+                    TryApplyStatus(caster, target, "Vulnerable", fx.statusDuration, fx.applyChance, target.Source.statusResistances.vulnerable);  break;
+                case EffectType.ApplyExploited:
+                    TryApplyStatus(caster, target, "Exploited",  fx.statusDuration, fx.applyChance, 0f);                                         break;
+                case EffectType.ApplyLock:
+                    ApplyLockEffect(target, fx.lockName, fx.lockedTags, fx.statusDuration);
+                    break;
+                case EffectType.ApplyCounter:
+                    target.ApplyStatus("Counter", fx.baseValue);
+                    Log($"    {target.Source.entityName} readies a counter [{fx.baseValue} dmg]");
+                    break;
+                case EffectType.ApplyParry:
+                    target.ApplyStatus("Parry", fx.baseValue);
+                    Log($"    {target.Source.entityName} readies a parry [{fx.baseValue} reduction]");
+                    break;
+                case EffectType.AddCardToHand:
+                    if (fx.cardToUnlock != null)
+                    {
+                        target.Hand.Add(fx.cardToUnlock);
+                        Log($"    [{fx.cardToUnlock.cardName}] added to {target.Source.entityName}'s hand!");
+                    }
+                    break;
+
+                case EffectType.RevealEnemyIntent:
+                    caster.ApplyStatus("Scouted", 1);
+                    Log($"    {caster.Source.entityName} reads the enemy's next move!");
+                    break;
+                /*case EffectType.ApplyPoison:   TryApplyStatus(caster, target, "Poison",   fx.baseValue,      fx.applyChance, 0f); break;
+                case EffectType.ApplyFreeze:     TryApplyStatus(caster, target, "Freeze",   fx.statusDuration, fx.applyChance, 0f); break;
+                case EffectType.ApplyWeak:       TryApplyStatus(caster, target, "Weak",     fx.statusDuration, fx.applyChance, 0f); break;
+                case EffectType.ApplyStrength:   TryApplyStatus(caster, target, "Strength", fx.baseValue,      fx.applyChance, 0f); break;*/
 
                 // ── Card manipulation ─────────────────────────────────
                 case EffectType.DrawCards:
@@ -294,6 +334,16 @@ namespace BattleDecks.Sim
             int finalDmg = Mathf.Max(1, rounded);
             Log($"[DMG DEBUG] After Clamp (min 1): {finalDmg}");
 
+            // parry — deflect before armor
+            if (target.HasStatus("Parry"))
+            {
+                int block = target.GetStatus("Parry");
+                finalDmg = Mathf.Max(0, finalDmg - block);
+                target.Statuses.Remove("Parry");
+                Log($"    {target.Source.entityName} parries! [{block} damage blocked]");
+                if (finalDmg == 0) return;
+            }
+
             // armor
             if (!fx.pierceArmor && target.Armor > 0)
             {
@@ -307,9 +357,20 @@ namespace BattleDecks.Sim
             target.CurrentHP -= finalDmg;
 
             string critTag = isCrit ? " (CRIT!)" : "";
-           // string resTag  = resistance != 1f ? $" (x{resistance:0.0} res)" : "";
-
             Log($"    {target.Source.entityName} takes {finalDmg} {fx.damageType} damage{critTag} [HP: {target.CurrentHP}/{target.MaxHP}]");
+
+            // counter — retaliate after absorbing the hit
+            if (finalDmg > 0 && target.HasStatus("Counter"))
+            {
+                int counterDmg = target.GetStatus("Counter");
+                target.Statuses.Remove("Counter");
+                caster.CurrentHP -= counterDmg;
+                Log($"    {target.Source.entityName} counters for {counterDmg}!  [{caster.Source.entityName} HP: {caster.CurrentHP}/{caster.MaxHP}]");
+            }
+
+            // low-health trigger check
+            if (!target.IsDead)
+                EvaluateTriggers(target, caster, TriggerCondition.OnLowHealth);
         }
 
         private void ApplyDodge(SimEntityState target, int stacks, float chance)
@@ -320,7 +381,7 @@ namespace BattleDecks.Sim
                 $"[{target.GetStatus("Dodge")} stack(s), {Mathf.RoundToInt(chance * 100)}% chance each]");
         }
 
-        private void TryApplyStatus(SimEntityState target, string status, int amount, float applyChance, float resistance)
+        private void TryApplyStatus(SimEntityState caster, SimEntityState target, string status, int amount, float applyChance, float resistance)
         {
             // roll 1: base apply chance (applyChance == 0 means always applies)
             float effectiveChance = applyChance > 0f ? applyChance : 1f;
@@ -338,6 +399,10 @@ namespace BattleDecks.Sim
             }
 
             ApplyStatus(target, status, amount);
+
+            // fire OnEnemyHasStatus triggers for whoever applied the status
+            if (caster != null && caster != target)
+                EvaluateTriggers(caster, target, TriggerCondition.OnEnemyHasStatus, status);
         }
 
         private void ApplyStatus(SimEntityState target, string status, int amount)
@@ -354,18 +419,65 @@ namespace BattleDecks.Sim
             if (Enemy.Source is not EnemyData ed || ed.intentPattern == null || ed.intentPattern.Length == 0)
             {
                 Log($"  {Enemy.Source.entityName} does nothing.");
+                EndTurn();
                 return;
             }
 
             if (ed.shuffleIntents)
                 _enemyIntentIndex = UnityEngine.Random.Range(0, ed.intentPattern.Length);
 
-            var intent = ed.intentPattern[_enemyIntentIndex % ed.intentPattern.Length];
-            Log($"  ► {Enemy.Source.entityName} uses [{intent.intentName}]");
-            ResolveEffects(intent.effects, Enemy, Player);
+            int total = ed.intentPattern.Length;
+            int acted = 0;
 
-            _enemyIntentIndex++;
+            while (!IsCombatOver)
+            {
+                var intent = ed.intentPattern[_enemyIntentIndex % total];
+                int cost = intent.energyCost;
+
+                // can't afford next action — stop for this turn
+                if (cost > 0 && Enemy.Energy < cost) break;
+
+                Log($"  ► {Enemy.Source.entityName} uses [{intent.intentName}]");
+                Enemy.Energy -= cost;
+                ResolveEffects(intent.effects, Enemy, Player);
+                _enemyIntentIndex++;
+                acted++;
+
+                // free (cost=0) actions execute once then stop
+                if (cost == 0) break;
+            }
+
+            if (acted == 0)
+                Log($"  {Enemy.Source.entityName} has no energy to act.");
+
             EndTurn();
+        }
+
+        /// <summary>Returns the ordered list of intents the enemy will execute on their next turn, given their current energy pool.</summary>
+        public List<EnemyIntent> GetEnemyNextIntents()
+        {
+            var result = new List<EnemyIntent>();
+            if (Enemy.Source is not EnemyData ed || ed.intentPattern == null || ed.intentPattern.Length == 0)
+                return result;
+
+            int energy = Enemy.Source.core.startingEnergy;
+            int total  = ed.intentPattern.Length;
+            int idx    = _enemyIntentIndex;
+
+            for (int i = 0; i < total; i++)
+            {
+                var intent = ed.intentPattern[idx % total];
+                int cost   = intent.energyCost;
+
+                if (cost > 0 && energy < cost) break;
+
+                result.Add(intent);
+                energy -= cost;
+                idx++;
+
+                if (cost == 0) break;
+            }
+            return result;
         }
 
         // ── Helpers ───────────────────────────────────────────────────
@@ -428,6 +540,50 @@ namespace BattleDecks.Sim
             if (cond.Contains("full hp"))    return caster.CurrentHP == caster.MaxHP;
             if (cond.Contains("low hp"))     return caster.CurrentHP <= caster.MaxHP * 0.25f;
             return false;
+        }
+
+        private void ApplyLockEffect(SimEntityState target, string lockName, CardTag lockedTags, int duration)
+        {
+            if (string.IsNullOrEmpty(lockName)) return;
+            int dur = duration > 0 ? duration : 1;
+            target.ActiveLocks[lockName] = lockedTags;
+            target.ApplyStatus(lockName, dur);
+            Log($"    {target.Source.entityName} is {lockName}! ({lockedTags} cards locked for {dur} turns)");
+        }
+
+        private void EvaluateTriggers(SimEntityState actor, SimEntityState opponent, TriggerCondition condition, string statusParam = null)
+        {
+            if (actor.SkillSet?.triggers == null) return;
+
+            foreach (var trigger in actor.SkillSet.triggers)
+            {
+                if (trigger == null) continue;
+                if (trigger.oneShot && actor.FiredOneShotTriggers.Contains(trigger)) continue;
+                if (trigger.condition != condition) continue;
+
+                bool fires = condition switch
+                {
+                    TriggerCondition.OnTurnStart      => true,
+                    TriggerCondition.OnLowHealth      => actor.CurrentHP <= actor.MaxHP * trigger.hpThreshold,
+                    TriggerCondition.OnEnemyHasStatus => string.Equals(trigger.statusToCheck, statusParam, StringComparison.OrdinalIgnoreCase),
+                    _                                 => false,
+                };
+
+                if (!fires) continue;
+
+                Log($"  ✦ {trigger.name} triggered!");
+
+                if (trigger.effects?.Length > 0)
+                    ResolveEffects(trigger.effects, actor, opponent);
+
+                if (trigger.cardToUnlock != null)
+                {
+                    actor.Hand.Add(trigger.cardToUnlock);
+                    Log($"    [{trigger.cardToUnlock.cardName}] unlocked and added to hand!");
+                }
+
+                if (trigger.oneShot) actor.FiredOneShotTriggers.Add(trigger);
+            }
         }
 
         private void FinishCombat()

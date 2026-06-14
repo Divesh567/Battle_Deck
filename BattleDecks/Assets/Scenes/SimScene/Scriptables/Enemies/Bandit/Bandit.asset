@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 288f4fd357c381940bb8bd6d797551da, type: 3}
   m_Name: Bandit
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   entityName: Bandit
   portrait: {fileID: 0}
   core:
@@ -40,21 +40,30 @@ MonoBehaviour:
   description: A street thug with a long knife. Precise, fast, and experienced enough
     to be dangerous.
   intentPattern:
+  - intentName: Intimidate
+    intentIcon: {fileID: 0}
+    energyCost: 40
+    effects:
+    - {fileID: 11400000, guid: 1a2b0001000000001234567890abcd17, type: 2}
   - intentName: Quick Stab
     intentIcon: {fileID: 0}
+    energyCost: 25
     effects:
     - {fileID: 11400000, guid: 1a2b0001000000001234567890abcd01, type: 2}
   - intentName: Slash
     intentIcon: {fileID: 0}
+    energyCost: 35
     effects:
     - {fileID: 11400000, guid: 1a2b0001000000001234567890abcd02, type: 2}
     - {fileID: 11400000, guid: 1a2b0001000000001234567890abcd03, type: 2}
   - intentName: Quick Stab
     intentIcon: {fileID: 0}
+    energyCost: 25
     effects:
     - {fileID: 11400000, guid: 1a2b0001000000001234567890abcd01, type: 2}
   - intentName: Gut Stab
     intentIcon: {fileID: 0}
+    energyCost: 55
     effects:
     - {fileID: 11400000, guid: 1a2b0001000000001234567890abcd04, type: 2}
   shuffleIntents: 0

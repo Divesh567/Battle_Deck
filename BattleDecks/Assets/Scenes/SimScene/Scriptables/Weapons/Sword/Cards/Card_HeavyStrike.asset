@@ -10,18 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e719b295589bc9d40ab52ba0934de6ea, type: 3}
-  m_Name: Card_Kick
+  m_Name: Card_HeavyStrike
   m_EditorClassIdentifier:
-  cardName: Kick
+  cardName: Heavy Strike
   artwork: {fileID: 0}
-  cardText: Deal 5 damage. Apply Vulnerable for 1 turn.
-  flavourText: Not elegant. Creates an opening anyway.
-  cardType: 1
-  rarity: 0
+  cardText: Deal 18 damage. Can crit. 15% miss chance.
+  flavourText: Commit to it or don't swing at all.
+  cardType: 0
+  rarity: 1
   damageType: 0
   allowedClasses: []
   cardTags: 1
-  energyCost: 10
+  energyCost: 20
   onPlayEffects:
-  - {fileID: 11400000, guid: 1a2b0001000000001234567890abcd09, type: 2}
-  - {fileID: 11400000, guid: 1a2b0001000000001234567890abcd0a, type: 2}
+  - {fileID: 11400000, guid: 1a2b0001000000001234567890abcd11, type: 2}

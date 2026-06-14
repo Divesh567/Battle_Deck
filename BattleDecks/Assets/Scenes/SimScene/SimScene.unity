@@ -2283,6 +2283,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e67d398500ded4347b26851dd3b6a0d4, type: 2}
   - {fileID: 11400000, guid: 3c4d0001000000001234567890cdef01, type: 2}
   - {fileID: 11400000, guid: 3c4d0001000000001234567890cdef02, type: 2}
+  - {fileID: 11400000, guid: 3c4d0001000000001234567890cdef03, type: 2}
   allEnemies:
   - {fileID: 11400000, guid: 4f9640215629f16409ab6e6fb381e2bc, type: 2}
   - {fileID: 11400000, guid: d167c4f52a0e7b134d5289f6a1b23e44, type: 2}

@@ -36,6 +36,7 @@ namespace BattleDecks.Data
     {
         public string intentName;               // display name, e.g. "Strike", "Defend", "Buff"
         public Sprite intentIcon;               // shown in UI during enemy telegraph
+        [Min(0)] public int energyCost;         // energy spent to execute; 0 = free (executes once then stops)
         public CardEffectData[] effects;        // effects that fire when this intent executes
     }
 }

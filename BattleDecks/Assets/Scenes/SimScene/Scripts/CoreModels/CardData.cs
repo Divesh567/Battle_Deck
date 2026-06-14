@@ -1,9 +1,20 @@
+using System;
 using UnityEngine;
 
 namespace BattleDecks.Data
 {
     public enum CardType   { Attack, Skill, Power, Reaction }
     public enum CardRarity { Common, Uncommon, Rare, Signature }
+
+    [Flags]
+    public enum CardTag
+    {
+        None             = 0,
+        Attack           = 1 << 0,
+        Reflex           = 1 << 1,
+        RequiresWeapon   = 1 << 2,
+        RequiresStanding = 1 << 3,
+    }
 
     /// <summary>
     /// Abstract base for all cards. Contains the full shared contract.
@@ -25,6 +36,7 @@ namespace BattleDecks.Data
         public CardRarity rarity;
         public DamageType damageType;           // None for non-damage cards
         public SkillSetData[] allowedClasses;   // empty = usable by all classes
+        public CardTag cardTags;                // used by lock system to restrict playability
 
         [Header("Cost")]
         [Min(0)] public int energyCost;

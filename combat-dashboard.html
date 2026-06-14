@@ -488,6 +488,52 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: #5b6790; }
+
+  /* ── Inline code ────────────────────────────────────────────────── */
+  code {
+    background: var(--surface3);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    color: var(--cyan);
+    font-family: 'Consolas', 'Courier New', monospace;
+  }
+  /* ── Call Chain (arch page) ─────────────────────────────────────── */
+  .call-chain { display: flex; flex-direction: column; gap: 0; }
+  .cc-step {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+  }
+  .cc-line {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 36px;
+    flex-shrink: 0;
+  }
+  .cc-dot {
+    width: 12px; height: 12px;
+    background: var(--accent);
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 14px;
+  }
+  .cc-vline { flex: 1; width: 2px; background: var(--border2); }
+  .cc-step:last-child .cc-vline { display: none; }
+  .cc-body {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    flex: 1;
+  }
+  .cc-body:hover { border-color: var(--border2); }
+  .cc-fn   { font-family: 'Consolas', monospace; font-size: 13px; font-weight: 700; color: var(--accent); }
+  .cc-desc { font-size: 12px; color: var(--text-dim); margin-top: 3px; }
+  .cc-sub  { margin-left: 16px; margin-top: 6px; }
+  .cc-sub .cc-fn { color: var(--cyan); font-size: 12px; }
 </style>
 </head>
 <body>
@@ -499,6 +545,7 @@
     <button class="tab-btn active" onclick="showPage('core',this)">Core System</button>
     <button class="tab-btn" onclick="showPage('rules',this)">Rules Reference</button>
     <button class="tab-btn" onclick="showPage('explorer',this)">Data Explorer</button>
+    <button class="tab-btn" onclick="showPage('arch',this)">Architecture</button>
   </div>
 </div>
 
@@ -574,8 +621,8 @@
           <li><strong>Player:</strong> Play any cards, any order, while energy allows</li>
           <li>Cards are moved to discard after play</li>
           <li>Press End Turn to pass manually</li>
-          <li><strong>Enemy:</strong> Executes its next intent automatically</li>
-          <li>Enemy's upcoming move always shown in UI</li>
+          <li><strong>Enemy:</strong> Loops through its intent cycle spending energy until it can't afford the next move — may act multiple times</li>
+          <li>Enemy intent is hidden by default — play <strong>Read the Fight</strong> (20 energy) to reveal it for that turn</li>
         </ul>
       </div>
       <div>
@@ -948,7 +995,10 @@
         <tr><td><strong>Ethereal / Innate</strong></td><td><span class="status-design">○ Designed</span></td><td>Fields on CardData, commented out, not implemented</td></tr>
         <tr><td><strong>Card upgrades</strong></td><td><span class="status-design">○ Designed</span></td><td>upgradedVersion field on CardDataBase, no system built</td></tr>
         <tr><td><strong>Discard / Exhaust / Add-to-Hand effects</strong></td><td><span class="status-design">○ Enum only</span></td><td>Not in engine switch statement</td></tr>
-        <tr><td><strong>Enemy intent UI accuracy</strong></td><td><span class="status-wip">◐ Bug</span></td><td>Always shows intent[0], not the actual next intent</td></tr>
+        <tr><td><strong>Enemy multi-action turns + scouting</strong></td><td><span class="status-live">● Live</span></td><td>Enemy loops intents by energy cost; intent hidden as [???], revealed by "Read the Fight" card (Scouted status)</td></tr>
+        <tr><td><strong>Lock system (CardTag)</strong></td><td><span class="status-live">● Live</span></td><td>ApplyLock effect blocks card categories via [Flags] bitmask; IsCardPlayable checks active locks</td></tr>
+        <tr><td><strong>Trigger system (TriggerData)</strong></td><td><span class="status-live">● Live</span></td><td>OnTurnStart / OnLowHealth / OnEnemyHasStatus — fires effects and unlocks cards</td></tr>
+        <tr><td><strong>Success chance on effects</strong></td><td><span class="status-live">● Live</span></td><td>successChance field on CardEffectData; Parry 70%, Counter 65% — checked before effect resolves</td></tr>
         <tr><td><strong>Multi-target logic</strong></td><td><span class="status-design">○ Placeholder</span></td><td>All Enemies / Random Enemy resolve to single opponent</td></tr>
         <tr><td><strong>On-hit weapon effects</strong></td><td><span class="status-design">○ Flag exists</span></td><td>triggerOnHitEffects flag on effects; no procs system</td></tr>
       </tbody>
@@ -985,6 +1035,354 @@
 
   </div>
 </div><!-- /page-explorer -->
+
+
+<!-- ══════════════════════════════════════════════════════════════════
+     PAGE 4 — ARCHITECTURE
+════════════════════════════════════════════════════════════════════ -->
+<div id="page-arch" class="page">
+
+  <div class="page-header">
+    <h2>Code Architecture</h2>
+    <p>How scripts connect, how data flows from ScriptableObjects to runtime state, and how each combat system is implemented under the hood.</p>
+  </div>
+
+  <!-- Script Map -->
+  <div class="card gap-md">
+    <div class="card-title">Script Map</div>
+    <table>
+      <thead>
+        <tr><th>Script</th><th>Layer</th><th>Owns / Responsibility</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>CardData.cs</strong></td>
+          <td><span class="pill pill-purple">ScriptableObject</span></td>
+          <td>Card definition — name, energy cost, <code>CardTag</code> flags, <code>CardEffectData[]</code> onPlayEffects</td>
+        </tr>
+        <tr>
+          <td><strong>CardEffectData.cs</strong></td>
+          <td><span class="pill pill-purple">ScriptableObject</span></td>
+          <td>One atomic effect — <code>EffectType</code>, <code>EffectTarget</code>, baseValue, successChance, missChance, lockName, cardToUnlock</td>
+        </tr>
+        <tr>
+          <td><strong>EntityData.cs</strong></td>
+          <td><span class="pill pill-purple">ScriptableObject (Base)</span></td>
+          <td>Shared combatant definition — name, <code>CoreAttributes</code> (HP, armor, energy, initiative), elemental/status resistances</td>
+        </tr>
+        <tr>
+          <td><strong>PlayerData.cs</strong></td>
+          <td><span class="pill pill-purple">ScriptableObject</span></td>
+          <td>Extends EntityData — hand size, starting deck, equipped weapon reference</td>
+        </tr>
+        <tr>
+          <td><strong>EnemyData.cs</strong></td>
+          <td><span class="pill pill-purple">ScriptableObject</span></td>
+          <td>Extends EntityData — <code>EnemyIntent[]</code> (name, energyCost, effects[]), tier, loot pool</td>
+        </tr>
+        <tr>
+          <td><strong>SkillSetData.cs</strong></td>
+          <td><span class="pill pill-purple">ScriptableObject</span></td>
+          <td>Class definition — class card pool, <code>TriggerData[]</code>, weapon proficiencies, stat bonuses</td>
+        </tr>
+        <tr>
+          <td><strong>WeaponData.cs</strong></td>
+          <td><span class="pill pill-purple">ScriptableObject</span></td>
+          <td>Weapon category, granted cards added to deck at loadout time</td>
+        </tr>
+        <tr>
+          <td><strong>TriggerData.cs</strong></td>
+          <td><span class="pill pill-purple">ScriptableObject</span></td>
+          <td>Reactive trigger — <code>TriggerCondition</code>, effects[], optional card to unlock, oneShot flag, HP threshold</td>
+        </tr>
+        <tr>
+          <td><strong>SimEntityState.cs</strong></td>
+          <td><span class="pill pill-cyan">Runtime State</span></td>
+          <td>Live combat state for one combatant — current HP/armor/energy, hand/draw/discard piles, <code>Statuses</code> dict, <code>ActiveLocks</code> dict, fired oneShot triggers set</td>
+        </tr>
+        <tr>
+          <td><strong>SimCombatEngine.cs</strong></td>
+          <td><span class="pill pill-orange">Pure C# Logic</span></td>
+          <td>Drives the full turn loop. Resolves all card effects. Runs the enemy AI. Fires <code>OnLogLine</code> and <code>OnStateChanged</code> events. No MonoBehaviour, no Unity lifecycle dependency.</td>
+        </tr>
+        <tr>
+          <td><strong>SimBattlePanel_UI.cs</strong></td>
+          <td><span class="pill pill-green">MonoBehaviour UI</span></td>
+          <td>Subscribes to engine events. Renders stats, hand, combat log. Forwards player input (card clicks, end turn) to the engine. Never writes game state directly.</td>
+        </tr>
+        <tr>
+          <td><strong>SimUIManager.cs</strong></td>
+          <td><span class="pill pill-green">MonoBehaviour UI</span></td>
+          <td>Loadout entry point — reads SOs, assembles deck, creates <code>SimEntityState</code> for player and enemy, wires engine ↔ panel, calls <code>StartCombat()</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Data Flow -->
+  <div class="card" style="margin-top:16px;">
+    <div class="card-title">Data Flow — Design Time → Runtime</div>
+    <div class="flow" style="align-items:stretch; gap:0;">
+      <div class="flow-step" style="background:rgba(192,132,252,0.08); border-color:rgba(192,132,252,0.3); border-right:none; border-radius:var(--radius) 0 0 var(--radius);">
+        <div class="flow-num" style="color:var(--purple);">① Design</div>
+        <div class="flow-name">ScriptableObjects</div>
+        <div class="flow-desc">Author cards, enemies, triggers, weapons in the Unity Inspector. Pure data assets — no logic, no code.</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="background:rgba(34,211,238,0.08); border-color:rgba(34,211,238,0.3); border-right:none; border-radius:0;">
+        <div class="flow-num" style="color:var(--cyan);">② Loadout</div>
+        <div class="flow-name">SimUIManager</div>
+        <div class="flow-desc">Reads SOs → merges starting deck + class pool + weapon cards → shuffles → builds <code>SimEntityState</code> for each combatant.</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="background:rgba(251,146,60,0.08); border-color:rgba(251,146,60,0.3); border-right:none; border-radius:0;">
+        <div class="flow-num" style="color:var(--orange);">③ Combat</div>
+        <div class="flow-name">SimCombatEngine</div>
+        <div class="flow-desc">Pure C# turn loop. All state mutations happen here. Emits log lines and state-changed events — no direct UI coupling.</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="background:rgba(74,222,128,0.08); border-color:rgba(74,222,128,0.3); border-radius:0 var(--radius) var(--radius) 0;">
+        <div class="flow-num" style="color:var(--green);">④ UI</div>
+        <div class="flow-name">SimBattlePanel_UI</div>
+        <div class="flow-desc">Listens to engine events. Reads <code>SimEntityState</code> to render. Never holds its own game state — fully reactive.</div>
+      </div>
+    </div>
+    <div class="note" style="margin-top:12px;">The engine is a plain C# class — zero Unity dependencies. It can be unit tested in isolation, run headlessly, or driven by a different UI without any changes to logic.</div>
+  </div>
+
+  <!-- Turn Loop -->
+  <div class="grid-2" style="margin-top:16px; align-items:start;">
+
+    <div class="card">
+      <div class="card-title">Turn Loop — Call Chain</div>
+      <div class="call-chain">
+        <div class="cc-step">
+          <div class="cc-line"><div class="cc-dot"></div><div class="cc-vline"></div></div>
+          <div class="cc-body">
+            <div class="cc-fn">StartCombat()</div>
+            <div class="cc-desc">Compare initiative → set <code>IsPlayerTurn</code> → call <code>BeginTurn()</code>.</div>
+          </div>
+        </div>
+        <div class="cc-step">
+          <div class="cc-line"><div class="cc-dot"></div><div class="cc-vline"></div></div>
+          <div class="cc-body">
+            <div class="cc-fn">BeginTurn()</div>
+            <div class="cc-desc">Calls <code>OnTurnStart()</code> (reset armor/energy, draw cards). Ticks start-of-turn statuses (Bleeding). Evaluates <code>OnTurnStart</code> triggers. Checks Stun. Calls <code>RunEnemyTurn()</code> if enemy's turn.</div>
+          </div>
+        </div>
+        <div class="cc-step">
+          <div class="cc-line"><div class="cc-dot" style="background:var(--cyan);"></div><div class="cc-vline"></div></div>
+          <div class="cc-body" style="border-color:rgba(34,211,238,0.3);">
+            <div class="cc-fn" style="color:var(--cyan);">RunEnemyTurn()</div>
+            <div class="cc-desc">Loops intent cycle. Each iteration: check <code>energyCost ≤ Enemy.Energy</code> → log intent → deduct energy → <code>ResolveEffects()</code> → advance index. Stops when unaffordable or on free (cost=0) action. Calls <code>EndTurn()</code>.</div>
+          </div>
+        </div>
+        <div class="cc-step">
+          <div class="cc-line"><div class="cc-dot" style="background:var(--green);"></div><div class="cc-vline"></div></div>
+          <div class="cc-body" style="border-color:rgba(74,222,128,0.3);">
+            <div class="cc-fn" style="color:var(--green);">PlayerPlayCard() / PlayerEndTurn()</div>
+            <div class="cc-desc">UI calls these on player interaction. <code>PlayerPlayCard</code> runs lock check → energy check → <code>ResolveEffects()</code> → <code>OnStateChanged</code>. <code>PlayerEndTurn</code> calls <code>EndTurn()</code>.</div>
+          </div>
+        </div>
+        <div class="cc-step">
+          <div class="cc-line"><div class="cc-dot"></div><div class="cc-vline"></div></div>
+          <div class="cc-body">
+            <div class="cc-fn">EndTurn()</div>
+            <div class="cc-desc">Calls <code>OnTurnEnd()</code> — discards hand, ticks all status durations (except Counter/Parry/Dodge). Checks <code>IsCombatOver</code>. Flips <code>IsPlayerTurn</code>, increments turn, calls <code>BeginTurn()</code>.</div>
+          </div>
+        </div>
+        <div class="cc-step">
+          <div class="cc-line"><div class="cc-dot" style="background:var(--red);"></div></div>
+          <div class="cc-body" style="border-color:rgba(248,113,113,0.3);">
+            <div class="cc-fn" style="color:var(--red);">FinishCombat()</div>
+            <div class="cc-desc">Called whenever any <code>IsDead</code> check returns true. Logs outcome. Fires <code>OnStateChanged</code>. The loop does not continue.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Effect Resolution -->
+    <div class="card">
+      <div class="card-title">Effect Resolution — One Card Play</div>
+      <div class="pipeline">
+        <div class="pipeline-step">
+          <div class="ps-num">1</div>
+          <div class="ps-name">Lock Check</div>
+          <div class="ps-desc"><code>IsCardPlayable(card)</code> — ORs all active lock bitmasks, checks <code>(cardTags &amp; blocked) == None</code>. Fail → log and return false immediately.</div>
+          <div class="ps-formula">CardTag flags</div>
+        </div>
+        <div class="pipeline-step">
+          <div class="ps-num">2</div>
+          <div class="ps-name">Energy + Hand Check</div>
+          <div class="ps-desc"><code>PlayCard()</code> — verify card is in hand, entity has enough energy. Deduct cost, move card to discard pile.</div>
+          <div class="ps-formula">Energy -= cost</div>
+        </div>
+        <div class="pipeline-step">
+          <div class="ps-num">3</div>
+          <div class="ps-name">Loop Effects</div>
+          <div class="ps-desc"><code>ResolveEffects(card.onPlayEffects, caster, opponent)</code> — iterates the effect array. Each <code>CardEffectData</code> resolved independently.</div>
+          <div class="ps-formula">foreach fx</div>
+        </div>
+        <div class="pipeline-step">
+          <div class="ps-num">4</div>
+          <div class="ps-name">Success Roll</div>
+          <div class="ps-desc">If <code>fx.successChance &gt; 0</code>, roll. On fail → log "<em>[name] failed!</em>" and return. Parry: 70%, Counter: 65%, most effects: 0% (always fire).</div>
+          <div class="ps-formula">Random.value ≤ chance</div>
+        </div>
+        <div class="pipeline-step">
+          <div class="ps-num">5</div>
+          <div class="ps-name">Target + Value</div>
+          <div class="ps-desc"><code>ResolveTarget()</code> maps the <code>EffectTarget</code> enum to a live <code>SimEntityState</code>. <code>ComputeValue()</code> resolves base value (scaling system designed but inactive).</div>
+          <div class="ps-formula">Self / Enemy</div>
+        </div>
+        <div class="pipeline-step">
+          <div class="ps-num">6</div>
+          <div class="ps-name">Effect Switch</div>
+          <div class="ps-desc">27-case <code>switch(fx.effectType)</code>. DealDamage → full damage pipeline. Statuses → <code>TryApplyStatus()</code>. Lock → <code>ApplyLockEffect()</code>. Parry/Counter → store in Statuses dict. RevealEnemyIntent → apply Scouted.</div>
+          <div class="ps-formula">switch(EffectType)</div>
+        </div>
+        <div class="pipeline-step">
+          <div class="ps-num">7</div>
+          <div class="ps-name">State Mutation + Log</div>
+          <div class="ps-desc">Mutates <code>SimEntityState</code> directly. Every change emits a line via <code>OnLogLine</code>. Trigger evaluation can chain further effects.</div>
+          <div class="ps-formula">state.field = value</div>
+        </div>
+        <div class="pipeline-step">
+          <div class="ps-num">8</div>
+          <div class="ps-name">UI Refresh</div>
+          <div class="ps-desc">After all effects resolve, <code>OnStateChanged?.Invoke()</code> fires. <code>SimBattlePanel_UI</code> reads the new state and redraws stats + hand.</div>
+          <div class="ps-formula">event → RefreshAll()</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /grid-2 -->
+
+  <!-- Three Systems Row -->
+  <div class="grid-3" style="margin-top:16px;">
+
+    <!-- Trigger System -->
+    <div class="card">
+      <div class="card-title">Trigger System</div>
+      <p style="font-size:13px; margin-bottom:12px;"><code>TriggerData</code> SOs live on <code>SkillSetData</code>. <code>EvaluateTriggers(actor, opponent, condition)</code> is called at key combat moments.</p>
+      <h4 style="font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px;">Conditions</h4>
+      <ul class="blist">
+        <li><strong>OnTurnStart</strong> — fires every time the entity's turn begins (e.g. stamina regen passive)</li>
+        <li><strong>OnLowHealth</strong> — fires after any damage if <code>HP ≤ MaxHP × threshold</code> (e.g. Rage Attack at 25%)</li>
+        <li><strong>OnEnemyHasStatus</strong> — fires when a status lands on the opponent; compares <code>statusToCheck</code> string (e.g. Final Blow on Exploited)</li>
+      </ul>
+      <div class="note" style="margin-top:10px;">OneShot triggers tracked in <code>HashSet&lt;TriggerData&gt;</code> per entity. Repeatable triggers re-fire every matching event. Unlocked cards are added directly to the entity's hand mid-combat.</div>
+    </div>
+
+    <!-- Lock System -->
+    <div class="card">
+      <div class="card-title">Lock System</div>
+      <p style="font-size:13px; margin-bottom:12px;"><code>CardTag</code> is a <code>[Flags]</code> enum — cards hold a bitmask of their category tags. Locks block those categories.</p>
+      <h4 style="font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px;">CardTag Flags</h4>
+      <ul class="blist" style="margin-bottom:12px;">
+        <li><strong>Attack (1)</strong> — offensive cards that deal damage</li>
+        <li><strong>Reflex (2)</strong> — reactive defensive cards (Counter, Parry, Dodge)</li>
+        <li><strong>RequiresWeapon (4)</strong> — can't be played unarmed</li>
+        <li><strong>RequiresStanding (8)</strong> — blocked while Fallen</li>
+      </ul>
+      <h4 style="font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px;">How it works</h4>
+      <p style="font-size:12px;">The <code>ApplyLock</code> effect writes to <code>entity.ActiveLocks[lockName] = lockedTags</code> and mirrors the lock as a timed status. <code>IsCardPlayable(card)</code> ORs all lock values into a blocked mask and returns <code>(card.cardTags &amp; blocked) == None</code>. Cards with no tags (<code>cardTags = 0</code>) are never blocked.</p>
+      <div class="note" style="margin-top:10px;">Bandit's Intimidate locks <code>Attack (1)</code> for 1 turn. The Commoner's "Read the Fight" card has no tags — it can always be played.</div>
+    </div>
+
+    <!-- Enemy Energy + Scouting -->
+    <div class="card">
+      <div class="card-title">Enemy Energy &amp; Scouting</div>
+      <p style="font-size:13px; margin-bottom:12px;">Enemies use the same energy-based multi-action system as the player. Intelligence about upcoming moves must be earned.</p>
+      <h4 style="font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px;">Multi-action loop</h4>
+      <ul class="blist" style="margin-bottom:12px;">
+        <li>Energy resets to <code>startingEnergy</code> at start of each enemy turn</li>
+        <li>Intent loop: check <code>energyCost ≤ energy</code> → execute → advance index → repeat</li>
+        <li>Cost=0 actions execute once and stop the loop</li>
+        <li><code>GetEnemyNextIntents()</code> simulates the upcoming turn (used by UI)</li>
+      </ul>
+      <h4 style="font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px;">Bandit (100 Energy)</h4>
+      <div class="card-mini"><div class="cm-name">Turn A</div><div class="cm-text">Intimidate (40) → Quick Stab (25) → Slash (35) = 100</div></div>
+      <div class="card-mini" style="margin-top:4px;"><div class="cm-name">Turn B</div><div class="cm-text">Quick Stab (25) → Gut Stab (55) = 80, stops at Intimidate</div></div>
+      <h4 style="font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.06em; margin-top:10px; margin-bottom:6px;">Scouting</h4>
+      <p style="font-size:12px;">Play <strong>Read the Fight</strong> → applies <code>Scouted</code> status (1 turn) to player → UI calls <code>GetEnemyNextIntents()</code> → shows <code>[X → Y → Z]</code>. Expires at end of turn.</p>
+    </div>
+
+  </div>
+
+  <!-- Reactive Statuses -->
+  <div class="card" style="margin-top:16px;">
+    <div class="card-title">Reactive Statuses — Counter &amp; Parry</div>
+    <p style="font-size:13px; margin-bottom:16px;">Counter and Parry are stored in the <code>Statuses</code> dict like other statuses but are <strong>consumed when hit</strong>, not ticked at end of turn. They use the dict value to store damage/block amounts rather than duration.</p>
+    <div class="grid-2" style="gap:12px;">
+      <div>
+        <h4 style="font-size:12px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px;">Parry — 70% success on play</h4>
+        <div class="pipeline" style="gap:3px;">
+          <div class="pipeline-step" style="padding:8px 12px;">
+            <div class="ps-num" style="font-size:10px;">1</div>
+            <div class="ps-desc">Play Parry → <code>successChance</code> roll (70%). Fail → wasted energy, nothing applied.</div>
+          </div>
+          <div class="pipeline-step" style="padding:8px 12px;">
+            <div class="ps-num" style="font-size:10px;">2</div>
+            <div class="ps-desc">Success → <code>Statuses["Parry"] = 15</code> (block value, not duration).</div>
+          </div>
+          <div class="pipeline-step" style="padding:8px 12px;">
+            <div class="ps-num" style="font-size:10px;">3</div>
+            <div class="ps-desc">On incoming hit: <code>finalDmg = Max(0, finalDmg - 15)</code>. Status removed. Runs <strong>before armor</strong>. If finalDmg reaches 0, attack is fully negated.</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h4 style="font-size:12px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px;">Counter — 65% success on play</h4>
+        <div class="pipeline" style="gap:3px;">
+          <div class="pipeline-step" style="padding:8px 12px;">
+            <div class="ps-num" style="font-size:10px;">1</div>
+            <div class="ps-desc">Play Counter → <code>successChance</code> roll (65%). Fail → wasted energy, nothing applied.</div>
+          </div>
+          <div class="pipeline-step" style="padding:8px 12px;">
+            <div class="ps-num" style="font-size:10px;">2</div>
+            <div class="ps-desc">Success → <code>Statuses["Counter"] = 12</code> (retaliation damage, not duration).</div>
+          </div>
+          <div class="pipeline-step" style="padding:8px 12px;">
+            <div class="ps-num" style="font-size:10px;">3</div>
+            <div class="ps-desc">On incoming hit: after HP is reduced, if <code>finalDmg > 0</code>, deals 12 damage back to attacker. Status removed. Runs <strong>after armor</strong>, only fires if the hit actually landed.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="warn" style="margin-top:12px;">Counter and Parry are excluded from end-of-turn <code>TickStatuses()</code> so their stored values aren't decremented. They either activate on the next hit or sit idle until the holder is attacked.</div>
+  </div>
+
+  <!-- Damage Pipeline quick ref -->
+  <div class="card" style="margin-top:16px;">
+    <div class="card-title">ApplyDamage() — Internal Order</div>
+    <div style="display:flex; flex-wrap:wrap; align-items:center; gap:6px; font-size:12px;">
+      <span class="pill pill-gray">Miss roll</span>
+      <span style="color:var(--text-faint);">→</span>
+      <span class="pill pill-gray">Dodge roll</span>
+      <span style="color:var(--text-faint);">→</span>
+      <span class="pill pill-gray">Weak ×0.75</span>
+      <span style="color:var(--text-faint);">→</span>
+      <span class="pill pill-orange">Vulnerable ×1.5</span>
+      <span style="color:var(--text-faint);">→</span>
+      <span class="pill pill-gray">Crit ×2</span>
+      <span style="color:var(--text-faint);">→</span>
+      <span class="pill pill-gray">Round + Clamp ≥1</span>
+      <span style="color:var(--text-faint);">→</span>
+      <span class="pill pill-blue">Parry block</span>
+      <span style="color:var(--text-faint);">→</span>
+      <span class="pill pill-blue">Armor absorb</span>
+      <span style="color:var(--text-faint);">→</span>
+      <span class="pill pill-red">HP -= finalDmg</span>
+      <span style="color:var(--text-faint);">→</span>
+      <span class="pill pill-yellow">Counter retaliation</span>
+      <span style="color:var(--text-faint);">→</span>
+      <span class="pill pill-purple">OnLowHealth trigger</span>
+    </div>
+    <div class="note" style="margin-top:10px;">Parry runs before armor — a strong enough parry can negate the hit entirely and prevent armor from being touched. Counter runs after HP reduction and only fires if <code>finalDmg &gt; 0</code>.</div>
+  </div>
+
+</div><!-- /page-arch -->
 
 </div><!-- /main -->
 

@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e674a8b27519fe642a7c3279999e44de, type: 3}
   m_Name: CommonerSkillSet
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   className: Commoner
   classIcon: {fileID: 0}
   classDescription: Not much to say about this one
@@ -25,15 +25,22 @@ MonoBehaviour:
     baseDodgeChance: 0
     baseCritChance: 0
   weaponProficiencies:
-  - category: 3
+  - category: 0
     level: 1
     flatDamageBonus: 0
     critBonus: 0
   skillProficiencies:
-  - skillName: 
+  - skillName:
     level: 0
-    description: 
+    description:
   classCardPool:
   - {fileID: 11400000, guid: f26cc7a182fbc52429eb0a9ebf5f8987, type: 2}
   - {fileID: 11400000, guid: 2b3c0001000000001234567890bcde07, type: 2}
+  - {fileID: 11400000, guid: 2b3c0001000000001234567890bcde13, type: 2}
+  - {fileID: 11400000, guid: 2b3c0001000000001234567890bcde14, type: 2}
+  - {fileID: 11400000, guid: 2b3c0001000000001234567890bcde17, type: 2}
   signatureCards: []
+  triggers:
+  - {fileID: 11400000, guid: feedface000000001234567890abcd01, type: 2}
+  - {fileID: 11400000, guid: feedface000000001234567890abcd02, type: 2}
+  - {fileID: 11400000, guid: feedface000000001234567890abcd03, type: 2}

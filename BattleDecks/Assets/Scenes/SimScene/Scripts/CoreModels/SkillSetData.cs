@@ -34,6 +34,9 @@ namespace BattleDecks.Data
         [Header("Class Cards")]
         public CardData[] classCardPool;          // cards available only to this class
         public CardData[] signatureCards;         // guaranteed in starting deck for this class
+
+        [Header("Triggers")]
+        public TriggerData[] triggers;            // passive triggers that fire during combat
     }
 
     /// <summary>

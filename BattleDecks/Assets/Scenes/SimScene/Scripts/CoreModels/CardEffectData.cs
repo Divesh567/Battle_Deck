@@ -20,7 +20,15 @@ namespace BattleDecks.Data
         GainEnergy, LoseEnergy,
         // Conditional trigger (fires only if predicate is true)
         Conditional,
-        
+        // Lock
+        ApplyLock,
+        // Reactive statuses (consumed on next incoming hit, not time-ticked)
+        ApplyCounter,
+        ApplyParry,
+        // Status
+        ApplyExploited,
+        // Information
+        RevealEnemyIntent,
     }
 
     public enum EffectTarget
@@ -87,8 +95,18 @@ namespace BattleDecks.Data
         public bool pierceArmor;
         public bool triggerOnHitEffects;        // does this hit proc weapon on-hit effects?
 
+        [Header("Success Chance")]
+        [Range(0f, 1f)] public float successChance; // 0 = always succeeds; >0 = probability the effect fires at all (e.g. Parry: 0.7)
+
         [Header("Miss")]
         [Range(0f, 1f)] public float missChance;    // 0 = never misses; only used on damage effects
         public CardEffectData[] onMissEffects;       // fires on the CASTER when this attack misses (e.g. self-expose)
+
+        [Header("Lock")]
+        public string lockName;                      // label for this lock (e.g. "Intimidated")
+        public CardTag lockedTags;                   // which card tags are blocked while lock is active
+
+        [Header("Card Unlock")]
+        public CardData cardToUnlock;                // for AddCardToHand: the card to add to hand
     }
 }

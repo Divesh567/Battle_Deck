@@ -37,6 +37,12 @@ namespace BattleDecks.Sim
         // ── Dodge ─────────────────────────────────────────────────────
         public float DodgeChance { get; set; }   // probability each dodge stack succeeds; set by ApplyDodge
 
+        // ── Locks ─────────────────────────────────────────────────────
+        public Dictionary<string, CardTag> ActiveLocks { get; private set; } = new();
+
+        // ── Trigger memory ────────────────────────────────────────────
+        public HashSet<TriggerData> FiredOneShotTriggers { get; private set; } = new();
+
         // ── Flags ─────────────────────────────────────────────────────
         public bool IsDead  => CurrentHP <= 0;
         public bool IsPlayer { get; private set; }
@@ -148,14 +154,26 @@ namespace BattleDecks.Sim
         public int GetStatus(string status) =>
             Statuses.TryGetValue(status, out int v) ? v : 0;
 
+        public bool IsCardPlayable(CardData card)
+        {
+            if (ActiveLocks.Count == 0) return true;
+            CardTag blocked = CardTag.None;
+            foreach (var kv in ActiveLocks) blocked |= kv.Value;
+            return (card.cardTags & blocked) == CardTag.None;
+        }
+
         public void TickStatuses()
         {
             var keys = new List<string>(Statuses.Keys);
             foreach (var k in keys)
             {
-                if (k == "Dodge") continue;   // dodge is consumed by attacks, not time
+                if (k == "Dodge" || k == "Counter" || k == "Parry") continue; // consumed by attack, not time
                 Statuses[k]--;
-                if (Statuses[k] <= 0) Statuses.Remove(k);
+                if (Statuses[k] <= 0)
+                {
+                    Statuses.Remove(k);
+                    ActiveLocks.Remove(k); // clean up lock data when its duration expires
+                }
             }
         }
 

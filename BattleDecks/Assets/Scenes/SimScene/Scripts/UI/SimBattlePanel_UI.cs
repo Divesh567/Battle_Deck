@@ -94,16 +94,32 @@ public class SimBattlePanel_UI : MonoBehaviour
             ? "Combat Over"
             : $"Turn {_engine.TurnNumber} — {(_engine.IsPlayerTurn ? "YOUR TURN" : "Enemy Turn")}";
 
-        // show enemy next intent
+        // show enemy next intent — hidden until player uses "Read the Fight"
         string nextIntent = "";
-        if (e.Source is EnemyData ed && ed.intentPattern?.Length > 0 && !_engine.IsCombatOver)
+        if (!_engine.IsCombatOver)
         {
-            var idx = 0; // engine tracks this internally; show first as preview
-            nextIntent = $"\nNext: [{ed.intentPattern[0].intentName}]";
+            if (_engine.Player.HasStatus("Scouted"))
+            {
+                var intents = _engine.GetEnemyNextIntents();
+                if (intents.Count > 0)
+                {
+                    var names = new List<string>();
+                    foreach (var intent in intents) names.Add(intent.intentName);
+                    nextIntent = $"\nNext: [{string.Join(" → ", names)}]";
+                }
+                else
+                {
+                    nextIntent = "\nNext: [—]";
+                }
+            }
+            else
+            {
+                nextIntent = "\nNext: [???]";
+            }
         }
 
         enemyStatText.text =
-            $"<b>{e.Source.entityName}</b>  [{(e.Source is EnemyData ed2 ? ed2.tier.ToString() : "?")}]\n" +
+            $"<b>{e.Source.entityName}</b>  [{(e.Source is EnemyData ed ? ed.tier.ToString() : "?")}]\n" +
             $"HP  {e.CurrentHP}/{e.MaxHP}\n" +
             $"ARM {e.Armor}{nextIntent}\n" +
             StatusSummary(e);
